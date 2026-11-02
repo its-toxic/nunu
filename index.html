@@ -1,561 +1,1593 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="day">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نونو | Nunu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#b58ad6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="نونو">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});</script>
+<title>نونو 🐰🍇</title>
 <style>
-  :root {
-    --bg: #fff0f6; --card: #ffffff; --text: #5a3350; --muted: #a77c97;
-    --accent: #ff7eb6; --accent2: #b9a4ff; --ok: #7ed8a8; --border: #ffd6e8;
-  }
-  [data-theme="night"] {
-    --bg: #1f1830; --card: #2d2442; --text: #f3e6ff; --muted: #b9a4d6;
-    --accent: #ff8fc4; --accent2: #8f7cdc; --ok: #6fcf9f; --border: #3f3358;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; font-family: "Segoe UI", Tahoma, sans-serif;
-    background: var(--bg); color: var(--text); min-height: 100vh;
-    transition: background .4s, color .4s;
-  }
-  .hidden { display: none !important; }
-  header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 16px; background: var(--card); border-bottom: 2px solid var(--border);
-    position: sticky; top: 0; z-index: 5;
-  }
-  header h1 { margin: 0; font-size: 1.3rem; color: var(--accent); }
-  .controls button, .btn {
-    background: var(--accent); color: #fff; border: none; border-radius: 999px;
-    padding: 8px 14px; margin: 0 3px; cursor: pointer; font-size: .9rem;
-  }
-  .btn.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
-  .btn.secondary { background: var(--accent2); }
-  main { max-width: 720px; margin: 0 auto; padding: 16px; }
-  .card {
-    background: var(--card); border: 2px solid var(--border); border-radius: 20px;
-    padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.05);
-  }
-  input, select {
-    width: 100%; padding: 10px; border-radius: 12px; border: 2px solid var(--border);
-    background: var(--bg); color: var(--text); font-size: 1rem; margin: 6px 0;
-  }
-  /* Login */
-  #login { max-width: 360px; margin: 60px auto; text-align: center; }
-  #login .btn { width: 100%; margin-top: 10px; }
-  .error { color: #e0457b; font-size: .9rem; min-height: 1.2em; }
-  /* Nunu */
-  #nunu-wrap { text-align: center; }
-  #nunu {
-    width: 140px; height: 140px; margin: 0 auto; position: relative;
-    animation: bob 2.4s ease-in-out infinite;
-  }
-  .body {
-    width: 120px; height: 120px; border-radius: 50%; background: #ffd9ea;
-    margin: 10px auto; position: relative; border: 3px solid var(--accent);
-  }
-  .eye { width: 12px; height: 16px; background: #5a3350; border-radius: 50%;
-    position: absolute; top: 42px; }
-  .eye.l { left: 34px; } .eye.r { right: 34px; }
-  .cheek { width: 14px; height: 8px; background: #ff9ec7; border-radius: 50%;
-    position: absolute; top: 66px; opacity: .7; }
-  .cheek.l { left: 18px; } .cheek.r { right: 18px; }
-  .mouth { width: 26px; height: 12px; border-radius: 0 0 26px 26px; background: #5a3350;
-    position: absolute; left: 47px; top: 66px; }
-  .ear { width: 26px; height: 26px; background: #ffd9ea; border: 3px solid var(--accent);
-    border-radius: 50%; position: absolute; top: -10px; }
-  .ear.l { left: 10px; } .ear.r { right: 10px; }
-  #nunu.studying .body { animation: wiggle .6s infinite; }
-  #nunu.happy .body { animation: jump .5s infinite; }
-  #nunu.sleepy .eye { height: 3px; top: 50px; }
-  #nunu.sleepy .body { opacity: .9; }
-  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-  @keyframes wiggle { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
-  @keyframes jump { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
-  #nunu-msg {
-    background: var(--bg); border-radius: 16px; padding: 12px; margin-top: 10px;
-    min-height: 48px; font-size: 1.05rem;
-  }
-  /* Timer */
-  #timer-display { font-size: 2.6rem; text-align: center; font-variant-numeric: tabular-nums; margin: 8px 0; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-  /* Stats */
-  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
-  .stat { background: var(--bg); border-radius: 14px; padding: 10px; }
-  .stat b { display: block; font-size: 1.4rem; color: var(--accent); }
-  /* Shop */
-  .shop { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-  .gift { background: var(--bg); border-radius: 16px; padding: 10px; text-align: center; font-size: .9rem; }
-  .gift .emoji { font-size: 2rem; }
-  .gift.locked { opacity: .45; }
-  /* Subjects */
-  .subject-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-  .chip { background: var(--bg); border: 2px solid var(--border); border-radius: 999px; padding: 6px 12px; }
-  .chip button { background: none; border: none; color: var(--muted); cursor: pointer; }
-  /* Chat */
-  #chat-log { max-height: 220px; overflow-y: auto; }
-  .bubble { padding: 8px 12px; border-radius: 14px; margin: 6px 0; max-width: 85%; }
-  .bubble.me { background: var(--accent2); color: #fff; margin-inline-start: auto; }
-  .bubble.nunu { background: var(--bg); }
-  .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-  .tabs button { flex: 1; min-width: 90px; }
-  .hidden-tab { display: none; }
-  .hint { color: var(--muted); font-size: .85rem; }
-  footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 20px; }
+:root{
+  --bg1:#fbf3ff; --bg2:#ead6f7; --card:rgba(255,255,255,.72); --text:#4a2f5c; --muted:#8e7aa0;
+  --p1:#b58ad6; --p2:#7d52a6; --leaf:#6fa76b; --line:rgba(181,138,214,.35);
+  --fill:#f5ebfc; --sh:0 14px 40px rgba(110,70,140,.18);
+  --room1:#efe3ff; --room2:#fde9f6;
+}
+[data-theme="night"]{
+  --bg1:#1a1226; --bg2:#2b1c44; --card:rgba(50,36,74,.78); --text:#f3e9ff; --muted:#b9a6d3;
+  --p1:#a77fd0; --p2:#c9a7f0; --leaf:#8fd08a; --line:rgba(167,127,208,.3);
+  --fill:#3a2a57; --sh:0 14px 40px rgba(0,0,0,.5);
+  --room1:#2a1f40; --room2:#3a2650;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:"Segoe UI",Tahoma,system-ui,sans-serif;color:var(--text);overflow-x:hidden;
+  background:linear-gradient(170deg,var(--bg1),var(--bg2)) fixed;transition:background .6s,color .6s}
+button,input,select,textarea{font-family:inherit}
+.hidden{display:none!important}
+#deco{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.deco-item{position:absolute;top:-60px;opacity:.35;animation:fall linear infinite}
+@keyframes fall{from{transform:translateY(0) rotate(0)}to{transform:translateY(115vh) rotate(360deg)}}
+.wrap{position:relative;z-index:1}
+
+header{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;
+  margin:10px;padding:10px 14px;border-radius:999px;background:var(--card);backdrop-filter:blur(12px);
+  box-shadow:var(--sh);border:1px solid var(--line)}
+header h1{margin:0;font-size:1.2rem;background:linear-gradient(90deg,var(--p2),var(--leaf));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.hdr-actions{display:flex;gap:6px;align-items:center}
+.icon-btn{width:40px;height:40px;border-radius:50%;border:none;background:var(--fill);cursor:pointer;font-size:1rem;
+  display:grid;place-items:center;transition:transform .15s;color:var(--text)}
+.icon-btn:active{transform:scale(.9)}
+
+main{max-width:720px;margin:0 auto;padding:6px 14px 110px}
+.view{animation:viewIn .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+nav.bottom{position:fixed;left:50%;transform:translateX(-50%);bottom:max(8px,env(safe-area-inset-bottom));
+  width:calc(100% - 16px);max-width:640px;z-index:30;display:flex;justify-content:space-around;
+  padding:6px;border-radius:26px;background:var(--card);backdrop-filter:blur(14px);border:1px solid var(--line);box-shadow:var(--sh)}
+nav.bottom button{flex:1;border:none;background:transparent;color:var(--muted);cursor:pointer;min-width:0;
+  display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 1px;border-radius:18px;
+  font-size:.62rem;transition:all .3s cubic-bezier(.2,.8,.2,1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav.bottom button .ic{font-size:1.2rem;transition:transform .3s}
+nav.bottom button.active{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;flex:1.5;box-shadow:0 8px 18px rgba(125,82,166,.35)}
+nav.bottom button.active .ic{transform:translateY(-2px) scale(1.1)}
+nav.bottom button:active{transform:scale(.94)}
+
+.card{background:var(--card);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:24px;
+  padding:18px;margin-bottom:16px;box-shadow:var(--sh)}
+.card h3{margin:0 0 12px;color:var(--p2);font-size:1.05rem}
+input,select,textarea{width:100%;padding:12px 14px;border-radius:16px;border:2px solid var(--line);
+  background:var(--fill);color:var(--text);font-size:1rem;margin:5px 0;outline:none;transition:border .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--p1);box-shadow:0 0 0 4px rgba(181,138,214,.2)}
+.hint{color:var(--muted);font-size:.87rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
+.row.start{justify-content:flex-start}
+.grow{flex:1;min-width:0}
+.btn{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;border:none;border-radius:999px;
+  padding:11px 20px;cursor:pointer;font-size:.95rem;box-shadow:0 8px 18px rgba(125,82,166,.28);
+  transition:transform .15s,box-shadow .2s;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.ghost{background:transparent;color:var(--p2);border:2px solid var(--p1);box-shadow:none}
+.btn.leaf{background:linear-gradient(135deg,var(--leaf),#4f8a4c)}
+.btn.small{padding:7px 14px;min-height:36px;font-size:.85rem}
+.btn.danger{background:linear-gradient(135deg,#e88aa6,#c4567c)}
+
+#login{max-width:380px;margin:60px auto;text-align:center;position:relative}
+#login .btn{width:100%;margin-top:10px}
+.login-tools{position:absolute;top:12px;left:12px;display:flex;gap:6px}
+.error{color:#d6457f;font-size:.9rem;min-height:1.2em;margin-top:6px}
+.pass-wrap{position:relative}
+.pass-wrap input{padding-left:48px}
+.eye-toggle{position:absolute;top:50%;transform:translateY(-50%);left:10px;width:34px;height:34px;border:none;
+  border-radius:50%;background:transparent;cursor:pointer;font-size:1.1rem;display:grid;place-items:center;padding:0;margin:0}
+.eye-toggle:active{transform:translateY(-50%) scale(.85)}
+
+/* ===== فضفضة ===== */
+.vent{position:fixed;inset:0;z-index:80;background:rgba(40,20,60,.45);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;padding:14px}
+.vent-card{width:100%;max-width:520px;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:var(--sh)}
+.vent-head{display:flex;justify-content:space-between;align-items:center}
+.vent-head h3{margin:0;color:var(--p2)}
+.vent textarea{min-height:220px;resize:vertical}
+
+/* ===== NUNU: ألوان ثابتة (موز) ===== */
+#nunu-wrap{text-align:center;position:relative;overflow:hidden}
+.nunu{position:relative;width:150px;height:150px;margin:6px auto 0;animation:bob 2.8s ease-in-out infinite}
+.nunu .aura{position:absolute;inset:-16px;border-radius:50%;opacity:0;
+  background:radial-gradient(circle,rgba(255,236,150,.8),transparent 70%);transition:opacity .4s}
+.nunu.studying .aura{opacity:1;animation:pulse 1.8s ease-in-out infinite}
+.nunu .ear{position:absolute;top:-22px;width:30px;height:62px;background:#ffe98a;border:3px solid #f2c94c;
+  border-radius:50px;transform-origin:bottom center}
+.nunu .ear.l{left:24px;transform:rotate(-12deg)} .nunu .ear.r{right:24px;transform:rotate(12deg)}
+.nunu.studying .ear{animation:ear .9s ease-in-out infinite}
+.nunu .body{position:absolute;left:15px;top:30px;width:120px;height:110px;border-radius:50%;background:#ffe98a;border:3px solid #f2c94c;transition:transform .3s}
+.nunu .eye{position:absolute;top:40px;width:12px;height:16px;background:#6b4423;border-radius:50%;animation:blink 4.5s infinite;transition:height .3s,top .3s}
+.nunu .eye.l{left:30px} .nunu .eye.r{right:30px}
+.nunu .shine{position:absolute;width:5px;height:5px;background:#fff;border-radius:50%;top:2px;left:3px}
+.nunu .cheek{position:absolute;top:66px;width:17px;height:9px;background:#ff9a9a;border-radius:50%;opacity:.7}
+.nunu .cheek.l{left:17px} .nunu .cheek.r{right:17px}
+.nunu .mouth{position:absolute;left:50px;top:66px;width:20px;height:10px;border-bottom:3px solid #6b4423;border-radius:0 0 20px 20px}
+.nunu.happy{animation:jump .5s ease 3}
+.nunu.happy .mouth{height:16px;border-radius:0 0 30px 30px}
+.nunu.talk .mouth{animation:talk .3s ease-in-out infinite alternate}
+@keyframes talk{to{height:4px}}
+.nunu.play{animation:hop .6s ease infinite}
+@keyframes hop{50%{transform:translateY(-22px) rotate(-6deg)}}
+.nunu.eat .mouth{animation:chomp .35s ease-in-out infinite alternate}
+@keyframes chomp{to{height:16px;border-radius:0 0 30px 30px}}
+.nunu.bath .body{animation:wob2 .5s ease-in-out infinite}
+@keyframes wob2{50%{transform:rotate(-6deg)}}
+.nunu.sleep .eye{height:3px;top:50px;animation:none}
+.nunu.sleep .body{transform:translateY(8px)}
+.nunu.sleep::after{content:"Z z";position:absolute;top:-24px;right:-18px;font-size:1.3rem;color:var(--p2);animation:zz 2.4s ease-in infinite}
+@keyframes zz{0%{opacity:0;transform:translate(0,0)}50%{opacity:1}100%{opacity:0;transform:translate(14px,-22px)}}
+.nunu.bath::before{content:"🫧 🫧 🫧";position:absolute;top:-10px;left:-14px;font-size:1.2rem;animation:bubbles 2s ease-in infinite}
+@keyframes bubbles{0%{opacity:0;transform:translateY(20px)}60%{opacity:1}100%{opacity:0;transform:translateY(-20px)}}
+.bubble-speech{position:relative;margin:14px auto 0;max-width:90%;padding:14px 16px;border-radius:22px;
+  background:var(--fill);border:1px solid var(--line);font-size:1.02rem;line-height:1.7;min-height:52px;animation:fade .5s}
+@keyframes fade{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes ear{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(-2deg)}}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes jump{0%,100%{transform:translateY(0)}50%{transform:translateY(-24px)}}
+
+/* ===== البيت ===== */
+.room{position:relative;height:340px;overflow:hidden;background:linear-gradient(180deg,var(--room1),var(--room2));padding:0}
+.room::before{content:"";position:absolute;left:0;right:0;bottom:0;height:80px;background:rgba(181,138,214,.25);border-top:3px dashed rgba(181,138,214,.35)}
+.room.night{background:linear-gradient(180deg,#1d1633,#2e2150)}
+.room.night::before{background:rgba(60,40,100,.45);border-top-color:rgba(160,120,220,.3)}
+.room-decor{position:absolute;inset:0;pointer-events:none}
+
+.sky{position:absolute;right:18px;top:14px;width:56px;height:56px;border-radius:50%}
+.sky.sun{background:radial-gradient(circle,#fff8b0,#ffd54a);box-shadow:0 0 26px #ffe27a}
+.sky.moon{background:radial-gradient(circle at 35% 35%,#fffbe6,#e6e0ff);box-shadow:0 0 20px #cfc6ff}
+.cloud{position:absolute;top:24px;font-size:2rem;opacity:.9;animation:drift 18s linear infinite}
+.cloud.c1{left:10%} .cloud.c2{left:50%;top:50px;font-size:1.5rem;animation-duration:24s}
+@keyframes drift{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+.star{position:absolute;color:#fff;opacity:.8;animation:twinkle 2.4s ease-in-out infinite}
+.star.s1{left:20%;top:30px} .star.s2{left:60%;top:60px} .star.s3{left:78%;top:24px}
+@keyframes twinkle{50%{opacity:.2}}
+
+.rug{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:340px;height:34px;border-radius:50%;
+  background:rgba(255,160,200,.4);border:2px solid rgba(255,255,255,.35)}
+
+.bed{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:240px;height:96px;z-index:1}
+.bed .frame{position:absolute;left:0;right:0;bottom:12px;height:44px;background:#c49a6c;border:3px solid #a57a4f;border-radius:14px}
+.bed .leg{position:absolute;bottom:0;width:14px;height:16px;background:#a57a4f;border-radius:4px}
+.bed .leg.l{left:12px} .bed .leg.r{right:12px}
+.bed .mattress{position:absolute;left:8px;right:8px;bottom:52px;height:24px;background:#fff;border-radius:12px}
+.bed .blanket{position:absolute;left:70px;right:6px;bottom:50px;height:40px;background:linear-gradient(#ffb3d1,#ff8fbd);border-radius:14px 14px 10px 10px}
+.bed .pillow{position:absolute;left:16px;bottom:72px;width:52px;height:24px;background:#fff;border-radius:14px;box-shadow:0 2px 0 #e6d6f2}
+.bed.cloud-bed .blanket{background:linear-gradient(#eaf8ff,#cfeeff)}
+
+.plant{position:absolute;left:12px;bottom:14px;width:70px;height:120px}
+.plant .pot{position:absolute;left:12px;bottom:0;width:46px;height:36px;background:#d9825b;border:2px solid #b5653e;border-radius:0 0 18px 18px}
+.plant .lf{position:absolute;bottom:30px;font-size:2.2rem}
+.plant .lf.a{left:0;transform:rotate(-25deg)}
+.plant .lf.b{left:24px;bottom:58px;transform:rotate(10deg)}
+.plant .lf.c{left:10px;bottom:82px;font-size:1.6rem}
+
+.bath{position:absolute;right:12px;bottom:18px;font-size:3rem}
+
+.room-toys{position:absolute;right:10px;top:84px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;z-index:1;max-height:50%;overflow:hidden}
+.room-toy{border:2px solid var(--line);background:var(--card);border-radius:16px;padding:4px 8px;font-size:1.4rem;cursor:pointer;line-height:1.1}
+.room-toy small{display:block;font-size:.65rem;color:var(--p2);font-weight:700}
+.room-toy:active{transform:scale(.9)}
+
+.fly-toy{position:absolute;bottom:60px;left:8%;font-size:2rem;z-index:3;pointer-events:none;animation:flyToy 1.6s ease-out forwards}
+@keyframes flyToy{
+  0%{left:8%;bottom:60px;transform:rotate(0)}
+  25%{bottom:170px}
+  50%{bottom:60px}
+  75%{bottom:120px}
+  100%{left:82%;bottom:50px;transform:rotate(360deg);opacity:0}
+}
+
+.pet-wrap{position:absolute;left:0;right:0;bottom:62px;margin:auto;width:150px;z-index:2;animation:walk 12s ease-in-out infinite}
+.room.sleeping .pet-wrap{animation:none;bottom:98px}
+@keyframes walk{0%,100%{transform:translateX(-80px)}50%{transform:translateX(80px)}}
+.pet{width:150px;height:150px;zoom:.9;animation:bob 2.8s ease-in-out infinite}
+.pet::before{content:"";position:absolute;left:22%;right:22%;bottom:-12px;height:12px;border-radius:50%;background:rgba(0,0,0,.15);filter:blur(2px)}
+.pet .belly{position:absolute;left:30px;top:60px;width:60px;height:42px;border-radius:50%;background:#fff3b0;opacity:.85}
+.pet .body{background:radial-gradient(circle at 35% 30%,#fff3b0,#ffe98a 55%,#f2c94c)}
+.pet .ear::after{content:"";position:absolute;left:6px;top:9px;width:12px;height:40px;border-radius:20px;background:#ffb3c1;opacity:.75}
+.pet .bow{position:absolute;left:50%;top:14px;transform:translateX(-50%) rotate(-10deg);font-size:1.5rem;z-index:2}
+.pet .tail{position:absolute;right:-10px;top:100px;width:24px;height:24px;background:#fff6c4;border:3px solid #f2c94c;border-radius:50%}
+.pet .arm{position:absolute;top:74px;width:20px;height:34px;background:#ffe98a;border:3px solid #f2c94c;border-radius:20px;transform-origin:top center}
+.pet .arm.l{left:-6px;transform:rotate(20deg)}
+.pet .arm.r{right:-6px;transform:rotate(-20deg)}
+.pet.walking .arm.l{animation:swing .6s ease-in-out infinite alternate}
+@keyframes swing{to{transform:rotate(-12deg)}}
+.pet.wave .arm.r{animation:wave .45s ease-in-out infinite alternate}
+@keyframes wave{to{transform:rotate(-70deg)}}
+.pet-bubble{position:absolute;left:50%;top:-64px;transform:translateX(-50%);width:max-content;max-width:230px;
+  background:var(--card);border:2px solid var(--line);border-radius:18px;padding:8px 12px;font-size:.9rem;line-height:1.5;
+  color:var(--text);box-shadow:var(--sh);z-index:4;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center}
+.pet-bubble.show{opacity:1}
+.pet-bubble::after{content:"";position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);border:8px solid transparent;border-bottom:0;border-top-color:var(--card)}
+.pet-state{position:absolute;top:12px;left:60px;right:90px;text-align:center;font-weight:700;color:var(--p2);z-index:3}
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bar-lbl{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
+.bar{height:10px;border-radius:999px;background:var(--fill);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--p1),var(--leaf));transition:width .6s}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.stat{background:var(--fill);border-radius:20px;padding:14px 6px}
+.stat b{display:block;font-size:1.6rem;color:var(--p2);margin-top:4px;transition:transform .3s}
+.stat b.pop{transform:scale(1.25)}
+.ring-wrap{position:relative;width:200px;height:200px;margin:12px auto}
+.ring-wrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-bg{stroke:var(--fill);fill:none;stroke-width:12}
+.ring-fg{stroke:url(#g);fill:none;stroke-width:12;stroke-linecap:round;stroke-dasharray:565;stroke-dashoffset:565;transition:stroke-dashoffset .5s linear}
+.ring-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-txt #timer-display{font-size:2.3rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--p2)}
+.ring-txt .hint{font-size:.8rem}
+
+.daily{background:linear-gradient(135deg,var(--p1),var(--leaf));color:#fff;border:none}
+.daily .hint{color:#fff;opacity:.95}
+.daily-bar{height:12px;border-radius:999px;background:rgba(255,255,255,.3);overflow:hidden;margin:10px 0 4px}
+.daily-bar i{display:block;height:100%;width:0;background:#fff;transition:width .6s}
+
+/* items & gifts */
+.gifts{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}
+.gift{position:relative;border-radius:22px;padding:14px 6px;text-align:center;transition:transform .25s;
+  background:var(--fill);border:2px solid var(--line);overflow:hidden;cursor:pointer}
+.gift:hover{transform:translateY(-4px) rotate(-2deg)}
+.gift .em{font-size:2.3rem;display:block;margin-bottom:4px}
+.gift.owned .em{animation:wob 2.5s ease-in-out infinite}
+@keyframes wob{0%,100%{transform:rotate(0)}50%{transform:rotate(8deg)}}
+.gift.locked{filter:grayscale(1);opacity:.45;cursor:default}
+.gift.common{border-color:#bfe8c4}
+.gift.rare{border-color:#9cc9ff}
+.gift.epic{border-color:#c79cff;box-shadow:0 6px 16px rgba(160,100,220,.25)}
+.gift.legendary{border-color:#ffd86b;box-shadow:0 0 18px rgba(255,216,107,.55)}
+.gift.legendary::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.7) 50%,transparent 70%);
+  transform:translateX(-100%);animation:shine 3s infinite}
+@keyframes shine{to{transform:translateX(100%)}}
+.rarity{font-size:.68rem;color:var(--muted)}
+.price{font-size:.8rem;color:var(--p2);font-weight:700}
+.inv{display:flex;flex-wrap:wrap;gap:8px}
+.inv button{border:2px solid var(--line);background:var(--fill);border-radius:16px;padding:8px 12px;cursor:pointer;color:var(--text);font-size:.95rem}
+.inv button span{font-size:.75rem;color:var(--p2);font-weight:700}
+.inv button:active{transform:scale(.94)}
+
+.subj{background:var(--fill);border-radius:20px;padding:14px;margin-bottom:12px;border:1px solid var(--line)}
+.subj-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.subj-head strong{font-size:1.05rem}
+.book{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;margin-top:6px;background:var(--card);border-radius:14px}
+.book a,.book .open{color:var(--p2);font-size:.92rem;text-decoration:none;word-break:break-all;cursor:pointer}
+.file-pick{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:14px;border:2px dashed var(--p1);
+  color:var(--p2);cursor:pointer;font-size:.85rem;background:var(--card)}
+.file-pick input{display:none}
+.list-empty{text-align:center;color:var(--muted);padding:26px 10px;font-size:.95rem}
+
+.song{display:flex;align-items:center;gap:10px;background:var(--fill);border-radius:18px;padding:10px 12px;margin:8px 0}
+.song .info{flex:1;min-width:0}
+.song .info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song .info small{color:var(--muted)}
+.mini{display:flex;gap:6px;flex-wrap:wrap}
+.field-label{font-size:.85rem;color:var(--muted);margin-top:8px;display:block}
+
+#chat-log{min-height:260px;max-height:55vh;overflow-y:auto;padding:6px 4px;display:flex;flex-direction:column}
+.bubble{padding:11px 15px;border-radius:20px;margin:6px 0;max-width:82%;line-height:1.7;animation:rise .35s ease both;word-wrap:break-word}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.bubble.me{background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;align-self:flex-start;border-bottom-right-radius:6px}
+.bubble.nunu{background:var(--fill);align-self:flex-end;border-bottom-left-radius:6px;color:var(--text)}
+[dir="ltr"] .bubble.me{align-self:flex-end}
+[dir="ltr"] .bubble.nunu{align-self:flex-start}
+.chat-empty{margin:auto;text-align:center;color:var(--muted);font-size:1rem;padding:20px}
+.chat-empty .big{font-size:2.4rem;display:block;margin-bottom:6px}
+.typing{display:inline-flex;gap:4px;align-items:center;padding:14px 16px}
+.typing i{width:8px;height:8px;background:var(--p1);border-radius:50%;animation:dot 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s} .typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-5px)}}
+
+#toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:90;opacity:0;
+  background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--line);padding:12px 18px;border-radius:999px;
+  box-shadow:var(--sh);transition:all .35s;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.floater{position:fixed;z-index:70;font-weight:700;color:var(--p2);pointer-events:none;animation:floatUp 1.2s ease forwards}
+@keyframes floatUp{to{transform:translateY(-70px);opacity:0}}
+.confetti{position:fixed;top:-20px;font-size:20px;pointer-events:none;z-index:9;animation:drop 2.8s linear forwards}
+@keyframes drop{to{transform:translateY(110vh) rotate(540deg);opacity:0}}
+
+.login-pass-row{position:relative}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px 10px 0}
+@media (min-width:720px){ .gifts{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))} }
 </style>
 </head>
 <body>
 
+<div id="deco"></div>
+
 <!-- ===== Login ===== -->
-<div id="login" class="card">
-  <h2 style="color:var(--accent)">نونو</h2>
-  <p class="hint">اكتبي اسمك وكلمة السر</p>
-  <input id="login-name" placeholder="الاسم">
-  <input id="login-pass" type="password" placeholder="كلمة السر">
+<div id="login" class="card wrap">
+  <div class="login-tools">
+    <button class="icon-btn" id="lang-btn-login" title="Language">EN</button>
+    <button class="icon-btn" id="theme-btn-login" title="theme">🌙</button>
+  </div>
+  <div class="nunu" style="margin:14px auto 6px;transform:scale(.7)">
+    <div class="ear l"></div><div class="ear r"></div>
+    <div class="body">
+      <div class="eye l"><div class="shine"></div></div><div class="eye r"><div class="shine"></div></div>
+      <div class="cheek l"></div><div class="cheek r"></div><div class="mouth"></div>
+    </div>
+  </div>
+  <h2 style="margin:4px 0;color:var(--p2)" data-i18n="login_title">نونو</h2>
+  <p class="hint" data-i18n="login_hint">اكتبي اسمك وكلمة السر</p>
+  <input id="login-name" data-i18n-ph="user_ph" placeholder="اسم الدخول">
+  <input id="login-display" data-i18n-ph="display_ph" placeholder="اسمك اللي نونو تناديكِ بيه">
+  <select id="login-gender"><option value="بنت" data-i18n="girl">بنت</option><option value="ولد" data-i18n="boy">ولد</option></select>
+  <div class="pass-wrap">
+    <input id="login-pass" type="password" data-i18n-ph="pass_ph" placeholder="كلمة السر">
+    <button type="button" class="eye-toggle" id="pass-eye" title="show">👁️</button>
+  </div>
   <div class="error" id="login-error"></div>
-  <button class="btn" id="login-btn">دخول</button>
+  <button class="btn" id="login-btn" data-i18n="login_btn">دخول</button>
 </div>
 
 <!-- ===== App ===== -->
-<div id="app" class="hidden">
+<div id="app" class="wrap hidden">
   <header>
-    <h1>نونو 🐰</h1>
-    <div class="controls">
-      <button id="lang-btn" title="Language">EN</button>
-      <button id="theme-btn" title="الوضع">🌙</button>
-      <button id="logout-btn" title="خروج">⏻</button>
+    <h1>نونو 🐰🍇</h1>
+    <div class="hdr-actions">
+      <button class="icon-btn" id="vent-btn" title="فضفضة">✨</button>
+      <button class="icon-btn" id="lang-btn" title="Language">EN</button>
+      <button class="icon-btn" id="theme-btn" title="theme">🌙</button>
+      <button class="icon-btn" id="logout-btn" title="logout">⏻</button>
     </div>
   </header>
 
   <main>
-    <div class="tabs">
-      <button class="btn" data-tab="home">الرئيسية</button>
-      <button class="btn ghost" data-tab="shop">الهدايا</button>
-      <button class="btn ghost" data-tab="chat">كلّمي نونو</button>
-      <button class="btn ghost" data-tab="settings">الإعدادات</button>
-    </div>
-
-    <!-- Home -->
-    <section id="tab-home">
-      <div class="card" id="nunu-wrap">
-        <div id="nunu">
+    <!-- HOME -->
+    <section class="view" id="v-home">
+      <div class="card" id="nunu-card">
+        <div class="nunu" id="nunu">
+          <div class="aura"></div>
           <div class="ear l"></div><div class="ear r"></div>
           <div class="body">
-            <div class="eye l"></div><div class="eye r"></div>
-            <div class="cheek l"></div><div class="cheek r"></div>
-            <div class="mouth"></div>
+            <div class="eye l"><div class="shine"></div></div><div class="eye r"><div class="shine"></div></div>
+            <div class="cheek l"></div><div class="cheek r"></div><div class="mouth"></div>
           </div>
         </div>
-        <div id="nunu-msg"></div>
+        <div class="bubble-speech" id="nunu-msg"></div>
       </div>
 
       <div class="card">
         <div class="stats">
-          <div class="stat"><span class="hint">دقايق</span><b id="st-min">0</b></div>
-          <div class="stat"><span class="hint">أسئلة</span><b id="st-q">0</b></div>
-          <div class="stat"><span class="hint">نقاط</span><b id="st-pts">0</b></div>
+          <div class="stat"><span class="hint" data-i18n="min_label">دقايق</span><b id="st-min">0</b></div>
+          <div class="stat"><span class="hint" data-i18n="q_label">أسئلة</span><b id="st-q">0</b></div>
+          <div class="stat"><span class="hint" data-i18n="pts_label">نقاط</span><b id="st-pts">0</b></div>
         </div>
-        <div class="hint" style="margin-top:8px">المكافأة: كل دقيقة مذاكرة = نقطة، وكل سؤال تحليه = نقطتين.</div>
+        <p class="hint" style="text-align:center;margin:12px 0 0" data-i18n="reward_hint">المكافأة: كل دقيقة = نقطة، وكل سؤال = نقطتين.</p>
       </div>
 
       <div class="card">
-        <label class="hint">المادة</label>
-        <select id="subject-select"></select>
-        <div id="timer-display">00:00</div>
+        <h3 data-i18n="study_title">المذاكرة</h3>
+        <div class="row"><select id="subject-select" class="grow"></select></div>
+        <div class="ring-wrap">
+          <svg viewBox="0 0 200 200">
+            <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#b58ad6"/><stop offset="1" stop-color="#6fa76b"/></linearGradient></defs>
+            <circle class="ring-bg" cx="100" cy="100" r="90"/>
+            <circle class="ring-fg" id="ring" cx="100" cy="100" r="90"/>
+          </svg>
+          <div class="ring-txt">
+            <div id="timer-display">00:00</div>
+            <div class="hint" data-i18n="goal">هدف الجلسة 25 دقيقة</div>
+          </div>
+        </div>
         <div class="row">
-          <button class="btn" id="start-btn">ابدأي المذاكرة</button>
-          <button class="btn secondary" id="stop-btn" disabled>خلصت</button>
+          <button class="btn" id="start-btn" data-i18n="start">ابدأي المذاكرة</button>
+          <button class="btn leaf" id="stop-btn" disabled data-i18n="stop">خلصت</button>
         </div>
-        <div class="row" style="margin-top:10px">
-          <input id="q-count" type="number" min="0" placeholder="عدد الأسئلة اللي حليتها" style="width:auto;flex:1">
-          <button class="btn" id="add-q-btn">سجّلي</button>
+        <div class="row" style="margin-top:16px">
+          <input id="q-count" type="number" min="0" data-i18n-ph="q_ph" placeholder="عدد الأسئلة اللي حليتها" class="grow">
+          <button class="btn" id="add-q-btn" data-i18n="record">سجّلي</button>
         </div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn ghost" id="music-btn">🎵 شغّلي أغنية</button>
-        </div>
-        <div class="hint" id="music-note" style="text-align:center;margin-top:6px"></div>
+      </div>
+
+      <div class="card daily">
+        <strong data-i18n="daily_title">🎁 هدية اليوم</strong>
+        <div class="hint" id="daily-text" style="margin-top:6px"></div>
+        <div class="daily-bar"><i id="daily-fill"></i></div>
       </div>
     </section>
 
-    <!-- Shop -->
-    <section id="tab-shop" class="hidden-tab">
+    <!-- ROOM -->
+    <section class="view hidden" id="v-room">
+      <div class="card room" id="room">
+        <div class="room-decor" id="room-decor"></div>
+        <div class="pet-state" id="pet-state"></div>
+        <div class="pet-wrap" id="pet-wrap">
+          <div class="pet-bubble" id="pet-bubble"></div>
+          <div class="nunu pet" id="pet">
+            <div class="aura"></div>
+            <div class="ear l"></div><div class="ear r"></div>
+            <div class="bow">🎀</div>
+            <div class="body">
+              <div class="belly"></div>
+              <div class="eye l"><div class="shine"></div></div><div class="eye r"><div class="shine"></div></div>
+              <div class="cheek l"></div><div class="cheek r"></div><div class="mouth"></div>
+            </div>
+            <div class="arm l"></div><div class="arm r"></div>
+            <div class="tail"></div>
+          </div>
+        </div>
+        <div class="room-toys" id="room-toys"></div>
+      </div>
+      <div class="row" style="margin:-4px 0 12px">
+        <button class="btn ghost small" id="talk-btn">💬 نونو يتكلم</button>
+        <button class="btn small hidden" id="wake-btn">☀️ صحّي نونو</button>
+      </div>
+
       <div class="card">
-        <h3 style="margin-top:0">الهدايا الافتراضية</h3>
-        <p class="hint">بتفتحي هدية كل ما تجمعي نقاط.</p>
-        <div class="shop" id="shop-grid"></div>
+        <div class="bars">
+          <div><div class="bar-lbl"><span data-i18n="b_hunger">الأكل</span><span></span></div><div class="bar"><i id="b-hunger"></i></div></div>
+          <div><div class="bar-lbl"><span data-i18n="b_hygiene">النظافة</span><span></span></div><div class="bar"><i id="b-hygiene"></i></div></div>
+          <div><div class="bar-lbl"><span data-i18n="b_fun">المرح</span><span></span></div><div class="bar"><i id="b-fun"></i></div></div>
+          <div><div class="bar-lbl"><span data-i18n="b_energy">النوم</span><span></span></div><div class="bar"><i id="b-energy"></i></div></div>
+        </div>
+      </div>
+
+      <div class="card"><h3 data-i18n="inv_food">🍽️ الأكل</h3><div class="inv" id="inv-food"></div></div>
+      <div class="card"><h3 data-i18n="inv_toy">🧸 اللعب</h3><div class="inv" id="inv-toy"></div></div>
+      <div class="card"><h3 data-i18n="inv_care">🛁 النظافة والنوم</h3><div class="inv" id="inv-care"></div>
+        <div class="row" style="margin-top:12px"><button class="btn ghost small" id="nap-btn" data-i18n="nap_btn">💤 نيّمي 15 دقيقة</button></div>
       </div>
     </section>
 
-    <!-- Chat -->
-    <section id="tab-chat" class="hidden-tab">
+    <!-- SHOP & GIFTS -->
+    <section class="view hidden" id="v-shop">
+      <div class="card row" style="justify-content:space-between">
+        <strong>🪙 <span id="coins">0</span> <span data-i18n="coins">كوينز</span></strong>
+        <span class="hint" data-i18n="coins_hint">كل 30 دقيقة مذاكرة = 20 كوينز</span>
+      </div>
       <div class="card">
+        <h3 data-i18n="store_title">🛍️ المتجر</h3>
+        <div class="gifts" id="store-grid"></div>
+        <div class="row" style="margin-top:14px"><button class="btn" id="box-btn" data-i18n="box_btn">🎁 صندوق عشوائي (30 🪙)</button></div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="gifts_title">الهدايا</h3>
+        <p class="hint" data-i18n="gifts_hint">كل 10 نقط بتفتح هدية جديدة.</p>
+        <div class="gifts" id="gift-grid"></div>
+      </div>
+      <div class="card">
+        <h3 data-i18n="wish_title">🌠 أمنياتك</h3>
+        <p class="hint" data-i18n="wish_hint">اكتبي اللي نفسك فيه، وهيتبعت لأحمد على الإيميل.</p>
+        <textarea id="wish-text" rows="4" data-i18n-ph="wish_ph" placeholder="اكتبي أمنيتك هنا..."></textarea>
+        <div class="row" style="margin-top:8px"><button class="btn" id="wish-btn" data-i18n="wish_send">ابعتيها</button></div>
+      </div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="view hidden" id="v-chat">
+      <div class="card" style="display:flex;flex-direction:column;min-height:70vh">
         <div id="chat-log"></div>
-        <div class="row" style="margin-top:8px">
-          <input id="chat-input" placeholder="اكتبي لنونو..." style="flex:1">
-          <button class="btn" id="chat-send">إرسال</button>
+        <div class="row" style="margin-top:10px">
+          <input id="chat-input" data-i18n-ph="chat_ph" placeholder="اكتبي اللي في بالك..." class="grow">
+          <button class="btn" id="chat-send" data-i18n="send">إرسال</button>
         </div>
       </div>
     </section>
 
-    <!-- Settings -->
-    <section id="tab-settings" class="hidden-tab">
+    <!-- SUBJECTS -->
+    <section class="view hidden" id="v-subjects">
       <div class="card">
-        <h3 style="margin-top:0">المواد</h3>
-        <div class="subject-list" id="subject-list"></div>
+        <h3 data-i18n="subjects_title">المواد والكتب</h3>
         <div class="row">
-          <input id="new-subject" placeholder="مادة جديدة">
-          <button class="btn" id="add-subject-btn">أضيفي</button>
+          <input id="new-subject" data-i18n-ph="new_subject" placeholder="اسم المادة" class="grow">
+          <button class="btn" id="add-subject-btn" data-i18n="add">أضيفي</button>
         </div>
       </div>
+      <div id="subject-list"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view hidden" id="v-settings">
       <div class="card">
-        <h3 style="margin-top:0">الأغاني</h3>
-        <p class="hint">حطّي رابط أغنية (MP3) أو سيبيه فاضي.</p>
-        <input id="song-url" placeholder="https://...">
-        <button class="btn" id="save-song-btn">احفظي</button>
+        <h3 data-i18n="songs_title">الأغاني</h3>
+        <p class="hint" data-i18n="songs_hint">حطّي رابط ملف MP3 تملكي حقه، وحددي المقطع اللي يتشغل كمكافأة.</p>
+        <div id="song-list"></div>
+        <span class="field-label" data-i18n="f_title">اسم الأغنية</span>
+        <input id="s-title" placeholder="(يتكتب تلقائياً لو فاضي)">
+        <span class="field-label" data-i18n="f_url">الرابط</span>
+        <input id="s-url" placeholder="https://...mp3">
+        <div class="row start">
+          <div class="grow"><span class="field-label" data-i18n="f_start">بداية المقطع (ثانية)</span><input id="s-start" type="number" min="0" value="0"></div>
+          <div class="grow"><span class="field-label" data-i18n="f_end">نهاية المقطع (ثانية)</span><input id="s-end" type="number" min="1" value="20"></div>
+        </div>
+        <div class="row" style="margin-top:10px"><button class="btn" id="add-song-btn" data-i18n="add_song">أضيفي الأغنية</button></div>
       </div>
+
       <div class="card">
-        <button class="btn ghost" id="reset-btn">امسحي كل البيانات</button>
+        <h3 data-i18n="profile_title">البروفايل</h3>
+        <span class="field-label" data-i18n="f_name">اسمك</span>
+        <input id="p-name">
+        <span class="field-label" data-i18n="f_gender">النوع</span>
+        <select id="p-gender"><option value="بنت" data-i18n="girl">بنت</option><option value="ولد" data-i18n="boy">ولد</option></select>
+        <div class="row" style="margin-top:12px">
+          <label class="btn ghost small" style="cursor:pointer">
+            <span data-i18n="pic_btn">📷 صورة</span>
+            <input type="file" accept="image/*" id="p-pic" class="hidden">
+          </label>
+          <button class="btn ghost small" id="rec-btn" data-i18n="rec_btn">🎤 سجّلي صوتك</button>
+          <button class="btn ghost small" id="play-voice-btn" data-i18n="play_voice">▶ صوتي</button>
+        </div>
+        <div class="hint" id="rec-note" style="text-align:center;margin-top:8px"></div>
+        <div class="row" style="margin-top:12px"><button class="btn" id="save-profile-btn" data-i18n="save">احفظي</button></div>
+        <div class="row" style="margin-top:12px"><button class="btn ghost small" id="install-btn" data-i18n="install_btn">📲 نزّلي نونو على التلفون</button></div>
+        <div class="hint" id="install-note" style="text-align:center;margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <button class="btn ghost danger" id="reset-btn" data-i18n="reset">امسحي كل البيانات</button>
+      </div>
+
+      <div class="card">
+        <h3>🔍 فحص الشات والإيميل</h3>
+        <p class="hint" id="check-out" style="white-space:pre-line">—</p>
+        <div class="row"><button class="btn small" id="check-btn">افحصي الآن</button></div>
       </div>
     </section>
+
+    <footer>
+      Developed by Ahmed<br>
+      📞 01032512602<br>
+      ✉️ business.developer0807@gmail.com
+    </footer>
   </main>
 
-  <footer>
-    Developed by Ahmed<br>
-    📞 01032512602<br>
-    ✉️ business.devoleper08@gmail.com
-  </footer>
+  <nav class="bottom" id="bottom-nav">
+    <button data-tab="home" class="active"><span class="ic">🏠</span><span data-i18n="home">الرئيسية</span></button>
+    <button data-tab="room"><span class="ic">🏡</span><span data-i18n="room">البيت</span></button>
+    <button data-tab="shop"><span class="ic">🛍️</span><span data-i18n="shop">المتجر</span></button>
+    <button data-tab="chat"><span class="ic">💬</span><span data-i18n="chat">نونو</span></button>
+    <button data-tab="subjects"><span class="ic">📚</span><span data-i18n="subjects">المواد</span></button>
+    <button data-tab="settings"><span class="ic">⚙️</span><span data-i18n="settings">الإعدادات</span></button>
+  </nav>
 </div>
 
-<script>
-/* ========= CONFIG ========= */
-// غيّري القيم دي قبل النشر. كلمة السر مكشوفة في الكود، فدي حماية بسيطة بس.
-const CONFIG = {
-  username: "memo",
-  password: "ahmed_memo"
-};
+<!-- ===== فضفضة ===== -->
+<div id="vent" class="vent hidden">
+  <div class="vent-card">
+    <div class="vent-head">
+      <h3 id="vent-title">🌠 فضفضة</h3>
+      <button class="icon-btn" id="vent-close" title="close">✕</button>
+    </div>
+    <p class="hint" id="vent-hint">هنا مكان تفضفضي فيه براحتك، وتتكلمي فيه براحتك، ومحدش هيعرف اللي بتقوليه غيرك.</p>
+    <textarea id="vent-text" rows="9" placeholder="اكتبي اللي جواكي..."></textarea>
+    <div class="hint" id="vent-status" style="min-height:1.4em;margin:6px 0;color:var(--p2)"></div>
+    <div class="row">
+      <button class="btn small leaf" id="vent-send">🌠 طلع اللي في قلبك</button>
+    </div>
+  </div>
+</div>
 
+<div id="toast"></div>
+<audio id="player" preload="none"></audio>
+
+<script>
 /* ========= STATE ========= */
-const KEY = "nunu-state-v1";
-const defaults = {
+const KEY = "nunu-state-v6";
+const DEF = {
   lang: "ar", theme: "day",
-  subjects: ["عربي", "أحياء", "كيمياء", "فيزياء", "إنجليزي", "فرنساوي"],
-  selectedSubject: "عربي",
-  minutes: 0, questions: 0, points: 0,
-  songUrl: "",
-  gifts: [], // ids of unlocked gifts
-  log: []   // {type, text, ts}
+  subjects: [], selectedSubject: "",
+  minutes: 0, questions: 0, points: 0, coins: 0,
+  songs: [], selectedSong: 0,
+  gifts: [], inv: {}, log: [],
+  profile: { name: "", gender: "بنت", avatar: "", voice: "" },
+  today: { date: "", minutes: 0 },
+  pet: { hunger: 80, hygiene: 80, fun: 80, energy: 80, last: Date.now(), sleepUntil: 0, awakeUntil: 0 }
 };
-let S = { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || "{}") };
+let S = { ...DEF, ...JSON.parse(localStorage.getItem(KEY) || "{}") };
+S.profile = { ...DEF.profile, ...(S.profile || {}) };
+S.today = { ...DEF.today, ...(S.today || {}) };
+S.pet = { ...DEF.pet, ...(S.pet || {}) };
+S.inv = S.inv || {};
 const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const clamp = v => Math.max(0, Math.min(100, v));
+const vib = (ms = 18) => { if (navigator.vibrate) navigator.vibrate(ms); };
 
 /* ========= I18N ========= */
 const T = {
   ar: {
-    login_title: "نونو", login_hint: "اكتبي اسمك وكلمة السر", login_btn: "دخول",
-    bad_login: "الاسم أو كلمة السر غلط",
-    home: "الرئيسية", shop: "الهدايا", chat: "كلّمي نونو", settings: "الإعدادات",
-    minutes: "دقايق", questions: "أسئلة", points: "نقاط",
-    start: "ابدأي المذاكرة", stop: "خلصت", record: "سجّلي",
-    q_placeholder: "عدد الأسئلة اللي حليتها", music: "🎵 شغّلي أغنية",
-    no_song: "حطّي رابط أغنية من الإعدادات الأول",
-    subjects: "المواد", new_subject: "مادة جديدة", add: "أضيفي",
-    songs: "الأغاني", song_hint: "حطّي رابط أغنية (MP3) أو سيبيه فاضي.", save: "احفظي",
-    gifts: "الهدايا الافتراضية", gifts_hint: "بتفتحي هدية كل ما تجمعي نقاط.",
-    reset: "امسحي كل البيانات", send: "إرسال", chat_ph: "اكتبي لنونو...",
-    reward_hint: "المكافأة: كل دقيقة مذاكرة = نقطة، وكل سؤال تحليه = نقطتين.",
-    lang_btn: "EN", logout: "خروج"
+    login_title:"نونو", login_hint:"اكتبي اسم الدخول وكلمة السر، واسمك وانتي بتسجلي", login_btn:"دخول", name_ph:"الاسم", pass_ph:"كلمة السر",
+    user_ph:"اسم الدخول", display_ph:"اسمك اللي نونو تناديكِ بيه", f_gender:"النوع", boy:"ولد", girl:"بنت",
+    install_btn:"📲 نزّلي نونو على التلفون", install_ios:"على iPhone: من Safari اضغطي زرار المشاركة ⬆️ واختاري Add to Home Screen", install_other:"على Android: من Chrome اضغطي ⋮ واختاري Install app",
+    bad_login:"الاسم أو كلمة السر غلط، أو السيرفر مش شغال",
+    file_warn:"افتحي الموقع من http://localhost:3001 مش من ملف index.html مباشرة",
+    home:"الرئيسية", room:"البيت", shop:"المتجر", chat:"نونو", subjects:"المواد", settings:"الإعدادات",
+    min_label:"دقايق", q_label:"أسئلة", pts_label:"نقاط",
+    reward_hint:"المكافأة: كل دقيقة = نقطة، وكل سؤال = نقطتين.",
+    study_title:"المذاكرة", goal:"هدف الجلسة 25 دقيقة", start:"ابدأي المذاكرة", stop:"خلصت",
+    record:"سجّلي", q_ph:"عدد الأسئلة اللي حليتها",
+    daily_title:"🎁 هدية اليوم", daily_text:"كل 30 دقيقة مذاكرة = 10 نقط + 20 كوينز. ذاكرتي {m} دقيقة النهارده، الدفعة الجاية بعد {r} دقيقة.",
+    b_hunger:"الأكل", b_hygiene:"النظافة", b_fun:"المرح", b_energy:"النوم",
+    inv_food:"🍽️ الأكل", inv_toy:"🧸 اللعب", inv_care:"🛁 النظافة والنوم", nap_btn:"💤 نيّمي 15 دقيقة",
+    coins:"كوينز", coins_hint:"كل 30 دقيقة مذاكرة = 20 كوينز",
+    store_title:"🛍️ المتجر", box_btn:"🎁 صندوق عشوائي (30 🪙)", box_no:"محتاجة 30 كوينز للصندوق",
+    buy_no:"الكوينز مش كفاية", bought:"اتشرى ✓", used:"استخدمتي ",
+    gifts_title:"الهدايا", gifts_hint:"كل 10 نقط بتفتح هدية جديدة.",
+    wish_title:"🌠 أمنياتك", wish_hint:"اكتبي اللي نفسك فيه، وهيتبعت لأحمد على الإيميل.",
+    wish_ph:"اكتبي أمنيتك هنا...", wish_send:"ابعتيها", wish_empty:"اكتبي الأمنية الأول 🤍",
+    send:"إرسال", chat_ph:"اكتبي اللي في بالك...", chat_empty:"اكتبي اللي في بالك، أنا سامعاكي 🤍",
+    subjects_title:"المواد والكتب", new_subject:"اسم المادة", add:"أضيفي",
+    no_subjects:"مفيش مواد لسه، أضيفي أول مادة فوق 📚",
+    book_ph:"اسم الكتاب", link_ph:"رابط (اختياري)", file_pick:"📎 ارفعي الكتاب", add_book:"+ كتاب",
+    no_books:"مفيش كتب لسه", del:"✕", open:"📖 افتحي",
+    songs_title:"الأغاني", songs_hint:"حطّي رابط ملف MP3 تملكي حقه، وحددي المقطع اللي يتشغل كمكافأة.",
+    f_title:"اسم الأغنية", f_url:"الرابط", f_start:"بداية المقطع (ثانية)", f_end:"نهاية المقطع (ثانية)",
+    add_song:"أضيفي الأغنية", no_songs:"مفيش أغاني لسه", preview:"▶",
+    profile_title:"البروفايل", f_name:"اسمك", pic_btn:"📷 صورة", rec_btn:"🎤 سجّلي صوتك",
+    play_voice:"▶ صوتي", rec_on:"بسجّل... اضغطي تاني عشان تخلصي", rec_saved:"صوتك اتحفظ 🤍",
+    save:"احفظي", saved:"اتحفظ ✓", reset:"امسحي كل البيانات",
+    no_song:"حطّي رابط أغنية من الإعدادات الأول", reward_song:"مكافأة! 🎶",
+    lang_btn:"EN", logout:"خروج", rar:["عادية","نادرة","أسطورية","خرافية"],
+    st_sleep:"نايمة 😴 هتصحى لوحدها", st_hungry:"جعانة 🍽️ محتاجة أكلة", st_tired:"نعسانة 🥱 محتاجة نوم",
+    st_dirty:"محتاجة حمام 🛁", st_bored:"عايزة تلعب 🎾", st_happy:"مبسوطة 💖", st_play:"بتلعب معاكي 🎈",
+    vent_hint:"هنا مكان تفضفضي فيه براحتك، وتتكلمي فيه براحتك، ومحدش هيعرف اللي بتقوليه غيرك.",
+    vent_empty:"اكتبي حاجة الأول 🤍", vent_ok:"اتبعت ✓ 🤍", vent_fail:"مش قادرة أبعت دلوقتي", vent_sending:"بتتبعت...", vent_noconf:"الإيميل لسه مش متظبط على السيرفر، شوفي خطوات الإعداد", vent_done:"خليك دايما مبسوط 🤍"
   },
   en: {
-    login_title: "Nunu", login_hint: "Enter your name and password", login_btn: "Enter",
-    bad_login: "Wrong name or password",
-    home: "Home", shop: "Gifts", chat: "Talk to Nunu", settings: "Settings",
-    minutes: "Minutes", questions: "Questions", points: "Points",
-    start: "Start studying", stop: "Done", record: "Log",
-    q_placeholder: "Questions you solved", music: "🎵 Play a song",
-    no_song: "Add a song link in Settings first",
-    subjects: "Subjects", new_subject: "New subject", add: "Add",
-    songs: "Songs", song_hint: "Paste an MP3 link or leave empty.", save: "Save",
-    gifts: "Virtual gifts", gifts_hint: "Unlock a gift every time you earn points.",
-    reset: "Clear all data", send: "Send", chat_ph: "Say something to Nunu...",
-    reward_hint: "Reward: each study minute = 1 point, each question solved = 2 points.",
-    lang_btn: "عربي", logout: "Log out"
+    login_title:"Nunu", login_hint:"Enter your username and password, plus your name", login_btn:"Enter", name_ph:"Name", pass_ph:"Password",
+    user_ph:"Username", display_ph:"Your name (Nunu will call you this)", f_gender:"Gender", boy:"Boy", girl:"Girl",
+    install_btn:"📲 Install Nunu on your phone", install_ios:"On iPhone: in Safari tap Share ⬆️ then Add to Home Screen", install_other:"On Android: in Chrome tap ⋮ then Install app",
+    bad_login:"Wrong name or password, or the server is down",
+    file_warn:"Open the app from http://localhost:3001, not the index.html file",
+    home:"Home", room:"Room", shop:"Shop", chat:"Nunu", subjects:"Subjects", settings:"Settings",
+    min_label:"Minutes", q_label:"Questions", pts_label:"Points",
+    reward_hint:"Reward: each minute = 1 point, each question = 2 points.",
+    study_title:"Study", goal:"Session goal: 25 minutes", start:"Start", stop:"Done",
+    record:"Log", q_ph:"Questions you solved",
+    daily_title:"🎁 Daily gift", daily_text:"Every 30 min of study = 10 points + 20 coins. {m} min today, next chunk in {r} min.",
+    b_hunger:"Food", b_hygiene:"Clean", b_fun:"Fun", b_energy:"Sleep",
+    inv_food:"🍽️ Food", inv_toy:"🧸 Toys", inv_care:"🛁 Care & sleep", nap_btn:"💤 Nap 15 min",
+    coins:"coins", coins_hint:"Every 30 min of study = 20 coins",
+    store_title:"🛍️ Store", box_btn:"🎁 Mystery box (30 🪙)", box_no:"You need 30 coins for the box",
+    buy_no:"Not enough coins", bought:"Bought ✓", used:"Used ",
+    gifts_title:"Gifts", gifts_hint:"Every 10 points unlocks a new gift.",
+    wish_title:"🌠 Your wishes", wish_hint:"Write what you wish for, it will be sent to Ahmed by email.",
+    wish_ph:"Write your wish here...", wish_send:"Send", wish_empty:"Write a wish first 🤍",
+    send:"Send", chat_ph:"Say what's on your mind...", chat_empty:"Tell me what's on your mind 🤍",
+    subjects_title:"Subjects & books", new_subject:"Subject name", add:"Add",
+    no_subjects:"No subjects yet, add your first one above 📚",
+    book_ph:"Book name", link_ph:"Link (optional)", file_pick:"📎 Upload book", add_book:"+ Book",
+    no_books:"No books yet", del:"✕", open:"📖 Open",
+    songs_title:"Songs", songs_hint:"Paste an MP3 link you have rights to, and choose the snippet that plays as a reward.",
+    f_title:"Song title", f_url:"Link", f_start:"Snippet start (sec)", f_end:"Snippet end (sec)",
+    add_song:"Add song", no_songs:"No songs yet", preview:"▶",
+    profile_title:"Profile", f_name:"Your name", pic_btn:"📷 Photo", rec_btn:"🎤 Record voice",
+    play_voice:"▶ My voice", rec_on:"Recording... tap again to stop", rec_saved:"Voice saved 🤍",
+    save:"Save", saved:"Saved ✓", reset:"Clear all data",
+    no_song:"Add a song link in Settings first", reward_song:"Reward! 🎶",
+    lang_btn:"عربي", logout:"Log out", rar:["Common","Rare","Epic","Legendary"],
+    st_sleep:"Sleeping 😴 will wake up by herself", st_hungry:"Hungry 🍽️ needs a snack", st_tired:"Sleepy 🥱 needs rest",
+    st_dirty:"Needs a bath 🛁", st_bored:"Wants to play 🎾", st_happy:"Happy 💖", st_play:"Playing with you 🎈",
+    vent_hint:"A private place to vent freely. Nobody will know what you write except you.",
+    vent_empty:"Write something first 🤍", vent_ok:"Sent ✓ 🤍", vent_fail:"Couldn't send right now", vent_sending:"Sending...", vent_noconf:"Email is not set up on the server yet", vent_done:"Always stay happy 🤍"
   }
 };
-const t = k => T[S.lang][k];
+const t = k => (T[S.lang][k] ?? k);
 
-/* ========= GIFTS ========= */
+/* ========= GIFTS (points) ========= */
+// [emoji, ar, en, points, rarity 0-3]
 const GIFTS = [
-  { id: "flower",  emoji: "🌸", ar: "وردة",      en: "Flower",   cost: 10 },
-  { id: "star",    emoji: "⭐", ar: "نجمة",       en: "Star",     cost: 25 },
-  { id: "cake",    emoji: "🎂", ar: "تورتة",      en: "Cake",     cost: 40 },
-  { id: "plush",   emoji: "🧸", ar: "دبدوب",      en: "Teddy",    cost: 60 },
-  { id: "crown",   emoji: "👑", ar: "تاج",        en: "Crown",    cost: 90 },
-  { id: "rainbow", emoji: "🌈", ar: "قوس قزح",    en: "Rainbow",  cost: 120 }
+  ["🍇","عنقود عنب","Grapes",5,0],["🍃","ورقة عنب","Grape leaf",8,0],["🌷","توليب","Tulip",12,0],["🌸","وردة","Blossom",15,0],
+  ["☕","قهوة","Coffee",18,0],["🍪","كوكيز","Cookie",22,0],["🍫","شوكولاتة","Chocolate",25,0],["🧁","كب كيك","Cupcake",30,0],
+  ["🍰","شيز كيك","Cheesecake",35,1],["🎂","تورتة","Cake",40,1],["🍩","دونات","Donut",45,1],["🧸","دبدوب","Teddy",55,1],
+  ["🎀","فيونكة","Ribbon",60,1],["💌","رسالة حب","Love letter",65,1],["🦋","فراشة","Butterfly",70,1],["🌙","قمر","Moon",78,1],
+  ["⭐","نجمة","Star",85,1],["🐣","كتكوت","Chick",92,1],
+  ["💎","جوهرة","Gem",100,2],["👑","تاج","Crown",110,2],["🪄","عصا سحرية","Wand",120,2],["🌈","قوس قزح","Rainbow",130,2],
+  ["🦄","يونيكورن","Unicorn",140,2],["🎠","حصان دوار","Carousel",150,2],["🏆","كأس","Trophy",160,2],["🎻","كمان","Violin",170,2],
+  ["🎈","بالون","Balloon",180,2],["🚀","صاروخ","Rocket",190,2],
+  ["🏰","قلعة","Castle",200,3],["🌌","مجرة","Galaxy",230,3],["🧚","جنية","Fairy",260,3],["🐉","تنين لطيف","Friendly dragon",300,3],
+  ["🌺","جنينة","Garden",330,3],["🎆","ألعاب نارية","Fireworks",360,3],["💫","نجمة الصباح","Morning star",400,3],["👸","أميرة","Princess",450,3],
+  ["🦢","بجعة","Swan",500,3],["🪐","كوكب","Planet",600,3]
 ];
 
-/* ========= NUNU LINES ========= */
+/* ========= STORE ITEMS (coins) ========= */
+// t: food | toy | care ; h: hunger, f: fun, hy: hygiene, sl: energy, sleep: minutes asleep
+const ITEMS = [
+  {id:"carrot",t:"food",e:"🥕",ar:"جزر",nm:"Carrot",c:4,h:15},
+  {id:"grape",t:"food",e:"🍇",ar:"عنب",nm:"Grapes",c:5,h:20},
+  {id:"strawberry",t:"food",e:"🍓",ar:"فراولة",nm:"Strawberry",c:6,h:20},
+  {id:"watermelon",t:"food",e:"🍉",ar:"بطيخ",nm:"Watermelon",c:6,h:22},
+  {id:"milk",t:"food",e:"🥛",ar:"لبن",nm:"Milk",c:5,h:18},
+  {id:"cookie",t:"food",e:"🍪",ar:"كوكيز",nm:"Cookie",c:7,h:22},
+  {id:"smoothie",t:"food",e:"🥤",ar:"سموذي",nm:"Smoothie",c:8,h:28},
+  {id:"coffee",t:"food",e:"☕",ar:"قهوة",nm:"Coffee",c:10,h:12,f:8},
+  {id:"cake",t:"food",e:"🍰",ar:"تورتة",nm:"Cake",c:15,h:35},
+  {id:"ball",t:"toy",e:"⚽",ar:"كرة",nm:"Ball",c:12,f:25},
+  {id:"kite",t:"toy",e:"🪁",ar:"طيارة ورقية",nm:"Kite",c:15,f:30},
+  {id:"yarn",t:"toy",e:"🧶",ar:"خيط",nm:"Yarn",c:8,f:18},
+  {id:"tennis",t:"toy",e:"🎾",ar:"تنس",nm:"Tennis",c:10,f:22},
+  {id:"puzzle",t:"toy",e:"🧩",ar:"لغز",nm:"Puzzle",c:18,f:28},
+  {id:"bath",t:"care",e:"🛁",ar:"حوض استحمام",nm:"Bath",c:20,hy:50,bath:1},
+  {id:"soap",t:"care",e:"🧼",ar:"صابون",nm:"Soap",c:5,hy:25,bath:1},
+  {id:"bed",t:"care",e:"🛏️",ar:"سرير",nm:"Bed",c:25,sl:60,sleep:20},
+  {id:"cloud",t:"care",e:"☁️",ar:"سحابة",nm:"Cloud bed",c:30,sl:70,f:10,sleep:25}
+];
+const itemName = i => (S.lang === "ar" ? i.ar : i.nm);
+
+/* ========= NUNU VOICE ========= */
 const LINES = {
   ar: {
-    idle:     ["أنا مستنياكي يا شطورة 🐰", "تعالي نذاكر سوا؟", "اهدي وركّزي، إنتي قادرة!"],
-    start:    ["يلا يا شطورة، ركّزي! 📚", "ذاكري براحتك، أنا جنبك", "بالتوفيق يا قمر!"],
-    stop:     ["برافو عليكي! 🎉", "شطورة أوي النهارده", "كملي كده وإنتي عظيمة ✨"],
-    question: ["حلو أوي! كده تمام 💪", "كل سؤال خطوة لقدام"],
-    gift:     ["فتحتي هدية جديدة! 🎁", "إنتي بتكسبي حاجات حلوة!"],
-    greet:    ["أهلاً يا مريم! 🐰", "نورتي يا قمر"]
+    morning:["صباح الفل يا قمر ☀️","صباح النور يا شطورة، صحيتي بدري!"],
+    evening:["مساء الفل يا حبيبتي 🌙","مساء النور، يلا نذاكر شوية؟"],
+    night:["إنتي لسه صاحية؟ خلي بالك من نفسك يا قمر 🌙","النوم مهم برضه يا حبيبتي"],
+    greet:["أهلاً يا مريم، نورتي يا قمر 🐰","وحشتيني يا شطورة، تعالي نكمل"],
+    start:["يلا يا شطورة، ركّزي وأنا معاكي 📚","ذاكري براحتك، ومتقلقيش لو تعبتي، أنا هنا"],
+    stop:["برافو عليكي يا حبيبتي! 🎉","إنتي شطورة أوي النهارده، فخور بيكي"],
+    question:["حلو أوي! كل سؤال خطوة لقدام 💪","ما شاء الله عليكي، إنتي بتتقدمي"],
+    gift:["فتحتي هدية جديدة! 🎁 تستاهلي كل حاجة حلوة"],
+    nosong:["حطّي رابط أغنية الأول من الإعدادات 🎵"],
+    playing:["بشغّلها ليكي 🎶 ريّحي دماغك شوية"],
+    eat:["ياااامي! شكراً يا قمر 😋","حلوة أوي، إيدك حلوة 🥰"],
+    bath:["بوووف! أنضف من الأول 🫧","الحمام كان حلو أوي 🛁"],
+    play:["يا سلام! العب تاني 🎾","إنتي اللي بتفرحيني بجد 🤍"],
+    sleep:["تصبحي على خير يا قمر 💤","هنام شوية وأصحى أحسن 🌙"],
+    chatter:[
+      "إنتي أحلى حاجة في يومي النهارده 🐰",
+      "فاكرة تشربي مية؟ خليكي بخير 💧",
+      "لو تعبتي، وقفي شوية وارجعي، مفيش مشكلة 🤍",
+      "كل خطوة صغيرة بتفرق، وإنتي ماشية كويس",
+      "عارفة إنك شاطرة؟ عشان كده أنا فخور بيكي 🥰",
+      "تحبي تفتحي هدية؟ ولا نكمل مذاكرة الأول؟ 🎁",
+      "ابتسمي شوية، وشك حلو أوي 🌸",
+      "أنا جنبك دايماً، مش هسيبك لوحدك 🫶",
+      "مش لازم تكوني كاملة، إنتي كفاية كده 💜",
+      "قولي حاجة حلوة حصلت النهارده 🤍"
+    ],
+    offline:["أنا جنبك يا قمر 🐰 قوليلي عايزة تذاكري إيه؟","شطورة إنك بتحاولي، كملي كده 🤍"]
   },
   en: {
-    idle:     ["I'm waiting for you, smart one 🐰", "Want to study together?", "Relax and focus, you can do it!"],
-    start:    ["Let's go, focus! 📚", "Study at your pace, I'm right here", "Good luck, superstar!"],
-    stop:     ["Well done! 🎉", "So smart today", "Keep it up, you're amazing ✨"],
-    question: ["Nice! That's it 💪", "Every question is a step forward"],
-    gift:     ["You unlocked a new gift! 🎁", "You're earning cute things!"],
-    greet:    ["Hi Maryam! 🐰", "Welcome back, superstar"]
+    morning:["Good morning, sunshine ☀️","Good morning! You woke up early, smart one!"],
+    evening:["Good evening, sweetheart 🌙","Ready for a little study?"],
+    night:["Still awake? Take care of yourself 🌙","Sleep matters too, you know"],
+    greet:["Hi Maryam, welcome back 🐰","I missed you, superstar. Let's continue"],
+    start:["Let's go, I'm right here with you 📚","Study at your pace, breaks are okay"],
+    stop:["Well done, sweetheart! 🎉","I'm so proud of you today"],
+    question:["Nice! Every question is a step forward 💪","Look at you go!"],
+    gift:["You unlocked a new gift! 🎁"],
+    nosong:["Add a song link in Settings first 🎵"],
+    playing:["Playing it for you 🎶 relax a bit"],
+    eat:["Yummy! Thank you 😋"],
+    bath:["Splash! So clean now 🫧"],
+    play:["Yay! Play again 🎾"],
+    sleep:["Sweet dreams 💤"],
+    chatter:["You're the best part of my day 🐰","Did you drink some water? 💧","If you're tired, take a break 🤍","Every small step counts 🌟"],
+    offline:["I'm right here, sweetheart 🐰 What do you want to study?","Proud of you for trying 🤍"]
   }
 };
-const pick = arr => arr[Math.floor(Math.random() * arr.length)];
-const say = (kind) => {
-  document.getElementById("nunu-msg").textContent = pick(LINES[S.lang][kind]);
+const timeKind = () => { const h = new Date().getHours(); return h >= 5 && h < 12 ? "morning" : h < 18 ? "evening" : "night"; };
+function nunuTalk(text) {
+  $("nunu-msg").textContent = text;
+  const n = $("nunu");
+  n.classList.add("talk");
+  setTimeout(() => n.classList.remove("talk"), 2000);
+}
+const nunuSay = (kind, talk = true) => {
+  const txt = pick(LINES[S.lang][kind] || LINES[S.lang].offline);
+  talk ? nunuTalk(txt) : ($("nunu-msg").textContent = txt);
 };
+
+/* ========= API ========= */
+const API = {
+  token: () => sessionStorage.getItem("nunu-token") || "",
+  async login(user, pass) {
+    const r = await fetch("/api/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ user, pass }) });
+    if (!r.ok) throw new Error("bad");
+    return r.json();
+  },
+  async chat(payload) {
+    const r = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + this.token() }, body: JSON.stringify(payload) });
+    if (r.status === 401) throw new Error("expired");
+    const d = await r.json();
+    return d;
+  },
+  async vent(text, mode) {
+    const r = await fetch("/api/vent", { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + this.token() }, body: JSON.stringify({ text, mode }) });
+    if (r.status === 401) throw new Error("expired");
+    const d = await r.json();
+    if (!r.ok) throw new Error((d.error || "fail") + (d.detail ? ": " + d.detail : ""));
+    return d;
+  }
+};
+
+/* ========= FILES (IndexedDB) ========= */
+const DBP = new Promise((res, rej) => {
+  const req = indexedDB.open("nunu-files", 1);
+  req.onupgradeneeded = () => req.result.createObjectStore("files");
+  req.onsuccess = () => res(req.result);
+  req.onerror = () => rej(req.error);
+});
+async function putFile(id, blob) {
+  const db = await DBP;
+  return new Promise((res, rej) => { const tx = db.transaction("files", "readwrite"); tx.objectStore("files").put(blob, id); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+}
+async function getFile(id) {
+  const db = await DBP;
+  return new Promise((res, rej) => { const r = db.transaction("files").objectStore("files").get(id); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+}
+async function delFile(id) {
+  if (!id) return;
+  const db = await DBP;
+  db.transaction("files", "readwrite").objectStore("files").delete(id);
+}
+
+/* ========= UI HELPERS ========= */
+let toastTimer;
+function toast(msg) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+function floatAt(el, text) {
+  const r = el.getBoundingClientRect();
+  const f = document.createElement("div");
+  f.className = "floater";
+  f.textContent = text;
+  f.style.left = r.left + r.width / 2 + "px";
+  f.style.top = r.top + "px";
+  document.body.appendChild(f);
+  setTimeout(() => f.remove(), 1300);
+}
+function confetti(n = 30) {
+  const emojis = ["✨","🍇","🍃","💜","⭐","🌸"];
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement("span");
+    el.className = "confetti";
+    el.textContent = pick(emojis);
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.animationDelay = Math.random() * 0.6 + "s";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3600);
+  }
+}
+function decorate() {
+  const box = $("deco");
+  const emojis = ["🍃","🍇","🌿","🍃","💜"];
+  for (let i = 0; i < 16; i++) {
+    const el = document.createElement("span");
+    el.className = "deco-item";
+    el.textContent = emojis[i % emojis.length];
+    el.style.left = Math.random() * 100 + "%";
+    el.style.fontSize = 14 + Math.random() * 18 + "px";
+    el.style.animationDuration = 14 + Math.random() * 16 + "s";
+    el.style.animationDelay = -Math.random() * 20 + "s";
+    box.appendChild(el);
+  }
+}
+
+/* ========= PET ========= */
+function isSleeping() {
+  if (timerStart) return false;
+  if (Date.now() < S.pet.awakeUntil) return false;
+  const h = new Date().getHours();
+  return Date.now() < S.pet.sleepUntil || h >= 23 || h < 7;
+}
+function isDay() {
+  const h = new Date().getHours();
+  return h >= 6 && h < 18;
+}
+function updatePet() {
+  const now = Date.now(), p = S.pet;
+  const min = Math.min(600, (now - p.last) / 60000);
+  p.last = now;
+  if (isSleeping()) {
+    p.energy = clamp(p.energy + min * 1.2);
+    p.hunger = clamp(p.hunger - min * 0.1);
+  } else {
+    p.energy = clamp(p.energy - min * 0.2);
+    p.hunger = clamp(p.hunger - min * 0.4);
+    p.hygiene = clamp(p.hygiene - min * 0.25);
+    p.fun = clamp(p.fun - min * 0.35);
+  }
+  save(); renderPet();
+}
+function renderPet() {
+  const p = S.pet, sl = isSleeping();
+  $("b-hunger").style.width = p.hunger + "%";
+  $("b-hygiene").style.width = p.hygiene + "%";
+  $("b-fun").style.width = p.fun + "%";
+  $("b-energy").style.width = p.energy + "%";
+  $("room").classList.toggle("sleeping", sl);
+  $("wake-btn").classList.toggle("hidden", !sl);
+  const el = $("pet");
+  if (!el.classList.contains("eat") && !el.classList.contains("bath") && !el.classList.contains("play")) {
+    el.className = "nunu pet" + (sl ? " sleep" : "") + (timerStart ? " play" : "");
+  }
+  const st = sl ? t("st_sleep") : p.hunger < 25 ? t("st_hungry") : p.energy < 25 ? t("st_tired")
+    : p.hygiene < 25 ? t("st_dirty") : p.fun < 25 ? t("st_bored") : timerStart ? t("st_play") : t("st_happy");
+  $("pet-state").textContent = st;
+  renderRoomItems();
+  renderInventory();
+}
+function petAnim(cls, ms) {
+  const el = $("pet");
+  el.classList.add(cls);
+  setTimeout(() => el.classList.remove(cls), ms);
+}
+function renderInventory() {
+  const box = (id, type) => {
+    const list = ITEMS.filter(i => i.t === type && (S.inv[i.id] || 0) > 0);
+    $(id).innerHTML = list.length
+      ? list.map(i => `<button data-use="${i.id}">${i.e} ${itemName(i)} <span>×${S.inv[i.id]}</span></button>`).join("")
+      : `<div class="hint">—</div>`;
+  };
+  box("inv-food", "food"); box("inv-toy", "toy"); box("inv-care", "care");
+}
+function flyToy(emoji) {
+  const el = document.createElement("span");
+  el.className = "fly-toy";
+  el.textContent = emoji;
+  $("room").appendChild(el);
+  setTimeout(() => el.remove(), 1700);
+}
+function useItem(id) {
+  const it = ITEMS.find(i => i.id === id);
+  if (!it || !S.inv[id]) return;
+  S.inv[id]--;
+  const p = S.pet;
+  if (it.h) p.hunger = clamp(p.hunger + it.h);
+  if (it.f) p.fun = clamp(p.fun + it.f);
+  if (it.hy) p.hygiene = clamp(p.hygiene + it.hy);
+  if (it.sl) p.energy = clamp(p.energy + it.sl);
+  if (it.sleep) p.sleepUntil = Date.now() + it.sleep * 60000;
+  if (it.t === "food") { petAnim("eat", 2200); nunuSay("eat"); }
+  else if (it.t === "toy") { petAnim("play", 3000); nunuSay("play"); flyToy(it.e); }
+  else if (it.bath) { petAnim("bath", 2800); nunuSay("bath"); }
+  else if (it.sleep) { nunuSay("sleep"); }
+  save(); renderPet();
+  toast(`${t("used")}${it.e} ${itemName(it)}`);
+}
+function buyItem(id) {
+  const it = ITEMS.find(i => i.id === id);
+  if (!it) return;
+  if (S.coins < it.c) { toast(t("buy_no")); return; }
+  S.coins -= it.c;
+  S.inv[id] = (S.inv[id] || 0) + 1;
+  save(); renderStore(); renderPet(); renderCoins();
+  toast(t("bought"));
+}
+function openBox() {
+  if (S.coins < 30) { toast(t("box_no")); return; }
+  S.coins -= 30;
+  const it = pick(ITEMS);
+  S.inv[it.id] = (S.inv[it.id] || 0) + 1;
+  vib(40); confetti(14);
+  toast(`🎁 ${it.e} ${itemName(it)}`);
+  save(); renderStore(); renderCoins(); renderPet();
+}
+function renderCoins() { $("coins").textContent = S.coins; }
+function renderStore() {
+  $("store-grid").innerHTML = ITEMS.map(i => `
+    <div class="gift common" data-buy="${i.id}">
+      <span class="em">${i.e}</span>
+      <div>${itemName(i)}</div>
+      <div class="price">${i.c} 🪙</div>
+    </div>`).join("");
+}
+
+/* ===== ROOM ===== */
+function renderRoomItems() {
+  const has = id => (S.inv[id] || 0) > 0;
+  const day = isDay();
+  const cloudBed = has("cloud");
+  $("room").classList.toggle("night", !day);
+
+  const sky = `<div class="sky ${day ? "sun" : "moon"}"></div>`;
+  const deco = day
+    ? `<span class="cloud c1">☁️</span><span class="cloud c2">☁️</span>`
+    : `<span class="star s1">✦</span><span class="star s2">✦</span><span class="star s3">✦</span>`;
+  const plant = `<div class="plant"><span class="lf a">🌿</span><span class="lf b">🌿</span><span class="lf c">🌱</span><div class="pot"></div></div>`;
+  const bed = `<div class="bed ${cloudBed ? "cloud-bed" : ""}">
+      <div class="leg l"></div><div class="leg r"></div>
+      <div class="frame"></div><div class="mattress"></div>
+      <div class="blanket"></div><div class="pillow"></div>
+    </div>`;
+  const bath = has("bath") ? `<div class="bath">🛁</div>` : "";
+
+  $("room-decor").innerHTML = `<div class="rug"></div>${sky}${deco}${plant}${bed}${bath}`;
+
+  const toys = ITEMS.filter(i => i.t === "toy" && has(i.id));
+  $("room-toys").innerHTML = toys.map(i =>
+    `<button class="room-toy" data-use="${i.id}" title="${itemName(i)}">${i.e}<small>×${S.inv[i.id]}</small></button>`
+  ).join("");
+}
+
+let bubbleTimer = null;
+function showPetBubble(text, ms = 3500) {
+  const b = $("pet-bubble");
+  b.textContent = text;
+  b.classList.add("show");
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => b.classList.remove("show"), ms);
+}
 
 /* ========= RENDER ========= */
 function applyLang() {
   document.documentElement.lang = S.lang;
   document.documentElement.dir = S.lang === "ar" ? "rtl" : "ltr";
-  document.getElementById("lang-btn").textContent = t("lang_btn");
-  document.getElementById("logout-btn").title = t("logout");
-  document.querySelector('[data-tab="home"]').textContent = t("home");
-  document.querySelector('[data-tab="shop"]').textContent = t("shop");
-  document.querySelector('[data-tab="chat"]').textContent = t("chat");
-  document.querySelector('[data-tab="settings"]').textContent = t("settings");
-  document.getElementById("start-btn").textContent = t("start");
-  document.getElementById("stop-btn").textContent = t("stop");
-  document.getElementById("add-q-btn").textContent = t("record");
-  document.getElementById("q-count").placeholder = t("q_placeholder");
-  document.getElementById("music-btn").textContent = t("music");
-  document.getElementById("new-subject").placeholder = t("new_subject");
-  document.getElementById("add-subject-btn").textContent = t("add");
-  document.getElementById("chat-send").textContent = t("send");
-  document.getElementById("chat-input").placeholder = t("chat_ph");
-  document.getElementById("reset-btn").textContent = t("reset");
-  document.querySelector("#tab-home .hint:last-child").textContent = t("reward_hint");
-  document.querySelector("#tab-shop h3").textContent = t("gifts");
-  document.querySelector("#tab-shop .hint").textContent = t("gifts_hint");
-  document.getElementById("theme-btn").textContent = S.theme === "night" ? "☀️" : "🌙";
-  document.body.parentElement.dataset.theme = S.theme === "night" ? "night" : "day";
-  renderStats(); renderSubjects(); renderShop(); renderChatLog();
+  document.documentElement.dataset.theme = S.theme;
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = t(el.dataset.i18nPh));
+  ["lang-btn", "lang-btn-login"].forEach(id => $(id).textContent = t("lang_btn"));
+  ["theme-btn", "theme-btn-login"].forEach(id => $(id).textContent = S.theme === "night" ? "☀️" : "🌙");
+  $("logout-btn").title = t("logout");
+  $("p-name").value = S.profile.name;
+  $("p-gender").value = S.profile.gender || "بنت";
+  $("vent-hint").textContent = t("vent_hint");
+  renderAll();
 }
-
+function renderAll() {
+  renderStats(); renderSubjects(); renderSongs(); renderGifts(); renderStore(); renderCoins();
+  renderChat(); renderDaily(); renderPet();
+}
 function renderStats() {
-  document.getElementById("st-min").textContent = S.minutes;
-  document.getElementById("st-q").textContent = S.questions;
-  document.getElementById("st-pts").textContent = S.points;
+  const set = (id, v) => { const el = $(id); if (el.textContent !== String(v)) { el.textContent = v; el.classList.add("pop"); setTimeout(() => el.classList.remove("pop"), 300); } };
+  set("st-min", S.minutes); set("st-q", S.questions); set("st-pts", S.points);
 }
-
 function renderSubjects() {
-  const sel = document.getElementById("subject-select");
-  sel.innerHTML = S.subjects.map(s => `<option ${s === S.selectedSubject ? "selected" : ""}>${s}</option>`).join("");
-  const list = document.getElementById("subject-list");
-  list.innerHTML = S.subjects.map((s, i) =>
-    `<span class="chip">${s} <button data-del="${i}">✕</button></span>`).join("");
+  const sel = $("subject-select");
+  if (!S.subjects.length) {
+    sel.innerHTML = `<option value="">${t("no_subjects")}</option>`;
+    sel.disabled = true;
+    $("subject-list").innerHTML = `<div class="card list-empty">${t("no_subjects")}</div>`;
+    return;
+  }
+  sel.disabled = false;
+  if (!S.subjects.some(s => s.name === S.selectedSubject)) S.selectedSubject = S.subjects[0].name;
+  sel.innerHTML = S.subjects.map(s => `<option ${s.name === S.selectedSubject ? "selected" : ""}>${esc(s.name)}</option>`).join("");
+  $("subject-list").innerHTML = S.subjects.map((s, i) => `
+    <div class="card" style="padding:14px">
+      <div class="subj-head">
+        <strong>📘 ${esc(s.name)}</strong>
+        <button class="btn ghost small" data-delsub="${i}">${t("del")}</button>
+      </div>
+      <div style="margin-top:8px">
+        ${s.books.length ? s.books.map((b, j) => `
+          <div class="book">
+            ${b.fileId ? `<span class="open" data-openbook="${b.fileId}">${t("open")} ${esc(b.title)}</span>`
+              : b.link ? `<a href="${esc(b.link)}" target="_blank" rel="noopener">📖 ${esc(b.title)}</a>`
+              : `<span>📖 ${esc(b.title)}</span>`}
+            <button class="btn ghost small" data-delbook="${i}-${j}">${t("del")}</button>
+          </div>`).join("") : `<div class="hint" style="margin-top:6px">${t("no_books")}</div>`}
+      </div>
+      <div class="row" style="margin-top:10px">
+        <input id="bk-t-${i}" placeholder="${t("book_ph")}" class="grow" style="margin:0">
+        <input id="bk-l-${i}" placeholder="${t("link_ph")}" class="grow" style="margin:0">
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label class="file-pick">${t("file_pick")}<input type="file" id="bk-f-${i}" accept=".pdf,image/*,.doc,.docx,.ppt,.pptx"></label>
+        <button class="btn small" data-addbook="${i}">${t("add_book")}</button>
+      </div>
+    </div>`).join("");
 }
-
-function renderShop() {
-  const grid = document.getElementById("shop-grid");
-  grid.innerHTML = GIFTS.map(g => {
-    const owned = S.gifts.includes(g.id);
-    const locked = !owned && S.points < g.cost;
-    return `<div class="gift ${locked ? "locked" : ""}">
-      <div class="emoji">${owned ? g.emoji : "🔒"}</div>
-      <div>${S.lang === "ar" ? g.ar : g.en}</div>
-      <div class="hint">${owned ? "✓" : g.cost + " ★"}</div>
+function renderSongs() {
+  $("song-list").innerHTML = S.songs.length ? S.songs.map((s, i) => `
+    <div class="song">
+      <div class="info"><b>🎵 ${esc(s.title)}</b><small>${s.start}s → ${s.end}s</small></div>
+      <div class="mini">
+        <button class="btn small" data-play="${i}">${t("preview")}</button>
+        <button class="btn ghost small" data-delsong="${i}">${t("del")}</button>
+      </div>
+    </div>`).join("") : `<div class="list-empty">${t("no_songs")}</div>`;
+}
+function renderGifts() {
+  $("gift-grid").innerHTML = GIFTS.map((g, i) => {
+    const owned = S.gifts.includes(i);
+    const locked = !owned && S.points < g[3];
+    const rc = ["common","rare","epic","legendary"][g[4]];
+    return `<div class="gift ${rc} ${owned ? "owned" : locked ? "locked" : ""}">
+      <span class="em">${owned ? g[0] : "🔒"}</span>
+      <div>${S.lang === "ar" ? g[1] : g[2]}</div>
+      <div class="rarity">${t("rar")[g[4]]}</div>
+      <div class="hint">${owned ? "✓" : g[3] + " ★"}</div>
     </div>`;
   }).join("");
 }
-
-function renderChatLog() {
-  const log = document.getElementById("chat-log");
-  log.innerHTML = S.log.slice(-30).map(m =>
-    `<div class="bubble ${m.from}">${escapeHtml(m.text)}</div>`).join("");
+function dayCheck() {
+  const d = new Date().toDateString();
+  if (S.today.date !== d) S.today = { date: d, minutes: 0 };
+}
+function renderDaily() {
+  dayCheck();
+  const m = S.today.minutes, r = 30 - (m % 30);
+  $("daily-text").textContent = t("daily_text").replace("{m}", m).replace("{r}", r);
+  $("daily-fill").style.width = ((m % 30) / 30 * 100) + "%";
+}
+function renderChat() {
+  const log = $("chat-log");
+  if (!S.log.length) {
+    log.innerHTML = `<div class="chat-empty"><span class="big">🐰</span>${t("chat_empty")}</div>`;
+    return;
+  }
+  log.innerHTML = S.log.slice(-60).map(m => `<div class="bubble ${m.from}">${esc(m.text)}</div>`).join("");
   log.scrollTop = log.scrollHeight;
 }
-
-const escapeHtml = s => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function showTyping(on) {
+  const log = $("chat-log");
+  const old = $("typing");
+  if (old) old.remove();
+  if (on) {
+    const d = document.createElement("div");
+    d.id = "typing";
+    d.className = "bubble nunu typing";
+    d.innerHTML = "<i></i><i></i><i></i>";
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+}
 
 /* ========= POINTS & GIFTS ========= */
-function addPoints(n) {
+function addPoints(n, anchor) {
   S.points += n;
-  for (const g of GIFTS) {
-    if (!S.gifts.includes(g.id) && S.points >= g.cost) {
-      S.gifts.push(g.id);
-      say("gift");
-    }
+  if (anchor) floatAt(anchor, "+" + n);
+  let unlocked = 0;
+  GIFTS.forEach((g, i) => {
+    if (!S.gifts.includes(i) && S.points >= g[3]) { S.gifts.push(i); unlocked++; }
+  });
+  if (unlocked) {
+    vib(60); confetti(40);
+    nunuSay("gift");
+    toast(`🎁 ${unlocked} ${S.lang === "ar" ? "هدية جديدة!" : "new gift(s)!"}`);
+    playSnippet(S.selectedSong);
   }
-  save(); renderStats(); renderShop();
+  save(); renderStats(); renderGifts();
 }
 
 /* ========= TIMER ========= */
-let timerStart = null, timerInterval = null, elapsed = 0;
-function fmt(sec) {
-  const m = Math.floor(sec / 60).toString().padStart(2, "0");
-  const s = (sec % 60).toString().padStart(2, "0");
-  return `${m}:${s}`;
+const RING_LEN = 565, GOAL_SEC = 25 * 60;
+let timerStart = null, timerInterval = null;
+const fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+function tick() {
+  const sec = Math.floor((Date.now() - timerStart) / 1000);
+  $("timer-display").textContent = fmt(sec);
+  $("ring").style.strokeDashoffset = RING_LEN * (1 - (sec % GOAL_SEC) / GOAL_SEC);
 }
 function startTimer() {
+  if (!S.subjects.length) { toast(t("no_subjects")); return; }
   timerStart = Date.now();
-  document.getElementById("start-btn").disabled = true;
-  document.getElementById("stop-btn").disabled = false;
-  document.getElementById("nunu").className = "studying";
-  say("start");
-  timerInterval = setInterval(() => {
-    const sec = elapsed + Math.floor((Date.now() - timerStart) / 1000);
-    document.getElementById("timer-display").textContent = fmt(sec);
-  }, 500);
+  $("start-btn").disabled = true;
+  $("stop-btn").disabled = false;
+  $("nunu").className = "nunu studying";
+  nunuSay("start");
+  tick();
+  timerInterval = setInterval(tick, 500);
+  renderPet();
 }
 function stopTimer() {
   clearInterval(timerInterval);
-  const sec = elapsed + Math.floor((Date.now() - timerStart) / 1000);
-  elapsed = 0; timerStart = null;
+  const sec = Math.floor((Date.now() - timerStart) / 1000);
+  timerStart = null;
   const mins = Math.floor(sec / 60);
-  document.getElementById("timer-display").textContent = fmt(0);
-  document.getElementById("start-btn").disabled = false;
-  document.getElementById("stop-btn").disabled = true;
-  document.getElementById("nunu").className = "happy";
+  $("timer-display").textContent = fmt(0);
+  $("ring").style.strokeDashoffset = RING_LEN;
+  $("start-btn").disabled = false;
+  $("stop-btn").disabled = true;
+  $("nunu").className = "nunu happy";
+  setTimeout(() => { $("nunu").className = "nunu"; }, 1600);
   if (mins > 0) {
     S.minutes += mins;
     S.log.push({ from: "nunu", text: S.lang === "ar"
-      ? `ذاكرتي ${mins} دقيقة في ${S.selectedSubject}` : `You studied ${mins} min of ${S.selectedSubject}` });
-    addPoints(mins);
+      ? `ذاكرتي ${mins} دقيقة في ${S.selectedSubject}، برافو عليكي 🤍`
+      : `You studied ${mins} min of ${S.selectedSubject}, so proud 🤍` });
+    addPoints(mins, $("stop-btn"));
+    dayCheck();
+    const before = Math.floor(S.today.minutes / 30);
+    S.today.minutes += mins;
+    const after = Math.floor(S.today.minutes / 30);
+    if (after > before) {
+      const chunks = after - before;
+      S.coins += chunks * 20;
+      addPoints(chunks * 10);
+      toast(`🎁 +${chunks * 10} ${S.lang === "ar" ? "نقط و" : "points &"} +${chunks * 20} 🪙`);
+    }
+    nunuSay("stop");
+    confetti(24);
+  } else {
+    toast(S.lang === "ar" ? "الجلسة قصيرة أوي، كملي المرة الجاية 🤍" : "Short session, try again next time 🤍");
   }
-  say("stop");
-  setTimeout(() => document.getElementById("nunu").className = "", 3000);
-  save(); renderStats(); renderChatLog();
+  save(); renderStats(); renderChat(); renderDaily(); renderCoins(); renderPet();
 }
 
 /* ========= QUESTIONS ========= */
 function recordQuestions() {
-  const input = document.getElementById("q-count");
+  const input = $("q-count");
   const n = parseInt(input.value, 10);
   if (!n || n < 1) return;
   S.questions += n;
   S.log.push({ from: "nunu", text: S.lang === "ar"
-    ? `حليتي ${n} سؤال في ${S.selectedSubject} 💪` : `You solved ${n} questions in ${S.selectedSubject} 💪` });
-  addPoints(n * 2);
+    ? `حليتي ${n} سؤال في ${S.selectedSubject || "المذاكرة"} 💪 إنتي شاطرة أوي`
+    : `You solved ${n} questions 💪` });
+  addPoints(n * 2, $("add-q-btn"));
   input.value = "";
-  say("question");
-  save(); renderStats(); renderChatLog();
+  nunuSay("question");
+  save(); renderStats(); renderChat();
 }
 
-/* ========= CHAT (simple rule-based, no network) ========= */
-function nunuReply(msg) {
-  const m = msg.trim();
-  const ar = S.lang === "ar";
-  if (/ذكرت|مذاكرة|دقايق|minutes|studied/i.test(m)) {
-    return ar ? `ذاكرتي ${S.minutes} دقيقة لحد دلوقتي، حلو أوي!`
-              : `You've studied ${S.minutes} minutes so far, lovely!`;
-  }
-  if (/حليت|سؤال|questions|solved/i.test(m)) {
-    return ar ? `حليتي ${S.questions} سؤال، إنتي شاطرة!`
-              : `You solved ${S.questions} questions, you're smart!`;
-  }
-  if (/نقط|points/i.test(m)) {
-    return ar ? `معاكي ${S.points} نقطة، كملي!` : `You have ${S.points} points, keep going!`;
-  }
-  if (/اغن|song|music/i.test(m)) {
-    return S.songUrl ? (ar ? "تمام، اضغطي على 🎵 في الرئيسية" : "Sure, press 🎵 on the home screen")
-                     : (ar ? "حطّي رابط أغنية من الإعدادات الأول" : "Add a song link in Settings first");
-  }
-  return pick(LINES[S.lang].idle);
+/* ========= MUSIC ========= */
+const player = $("player");
+let snippetTimer = null;
+function playSong(index) {
+  const song = S.songs[index];
+  if (!song || !song.url) { toast(t("no_song")); nunuSay("nosong", false); return; }
+  player.pause();
+  player.src = song.url;
+  player.currentTime = song.start || 0;
+  player.play().catch(() => toast(t("no_song")));
+  clearTimeout(snippetTimer);
+  snippetTimer = setTimeout(() => player.pause(), Math.max(1, (song.end || 20) - (song.start || 0)) * 1000);
 }
-function sendChat() {
-  const input = document.getElementById("chat-input");
-  const text = input.value.trim();
+function playSnippet(index) {
+  if (!S.songs.length || !S.songs[index]) return;
+  playSong(index);
+  toast(t("reward_song"));
+}
+function stopSong() { clearTimeout(snippetTimer); player.pause(); }
+function titleFromUrl(url) {
+  try {
+    const last = decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() || "");
+    return last.replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").trim() || "أغنية";
+  } catch { return "أغنية"; }
+}
+
+/* ========= CHAT ========= */
+function localReply(msg) {
+  const ar = S.lang === "ar";
+  if (/تعبت|مرهق|زهقت|tired/i.test(msg)) return ar ? "لو تعبتي خدي استراحة، ولا يهمك 🤍" : "Take a rest, it's okay 🤍";
+  if (/ذكرت|دقايق|minutes/i.test(msg)) return ar ? `ذاكرتي ${S.minutes} دقيقة لحد دلوقتي، فخور بيكي` : `${S.minutes} minutes so far, proud of you`;
+  if (/حليت|سؤال|questions/i.test(msg)) return ar ? `حليتي ${S.questions} سؤال، إنتي شاطرة أوي` : `You solved ${S.questions} questions`;
+  if (/نقط|points/i.test(msg)) return ar ? `معاكي ${S.points} نقطة، كملي` : `You have ${S.points} points`;
+  if (/بحبك|love you/i.test(msg)) return ar ? "وأنا كمان بحبك يا قمر 🤍" : "I love you too 🤍";
+  return pick(LINES[S.lang].offline);
+}
+async function sendChat() {
+  const inp = $("chat-input");
+  const text = inp.value.trim();
   if (!text) return;
   S.log.push({ from: "me", text });
-  S.log.push({ from: "nunu", text: nunuReply(text) });
-  input.value = "";
-  save(); renderChatLog();
+  inp.value = "";
+  save(); renderChat();
+  showTyping(true);
+  let reply = "", errInfo = "";
+  try {
+    const d = await API.chat({
+      lang: S.lang,
+      messages: S.log.slice(-12).map(m => ({ role: m.from === "me" ? "user" : "assistant", content: m.text })),
+      context: { minutes: S.minutes, questions: S.questions, points: S.points, subject: S.selectedSubject, name: S.profile.name, gender: S.profile.gender }
+    });
+    reply = d.reply || "";
+    errInfo = d.error || "";
+  } catch (e) {
+    if (e.message === "expired") return logout();
+    errInfo = e.message;
+  }
+  showTyping(false);
+  if (errInfo) toast("⚠️ الشات: " + errInfo.slice(0, 140));
+  if (!reply) reply = localReply(text);
+  S.log.push({ from: "nunu", text: reply });
+  save(); renderChat();
+}
+
+/* ========= FADFADA (فضفضة) ========= */
+function openVent() {
+  $("vent").classList.remove("hidden");
+  $("vent-text").value = localStorage.getItem("nunu-vent-draft") || "";
+  $("vent-text").focus();
+}
+function closeVent() { $("vent").classList.add("hidden"); }
+async function sendVent(mode) {
+  const text = $("vent-text").value.trim();
+  if (!text) { toast(t("vent_empty")); return; }
+  $("vent-status").textContent = t("vent_sending");
+  try {
+    await API.vent(text, "vent");
+    $("vent-status").textContent = "";
+    $("vent-text").value = "";
+    localStorage.removeItem("nunu-vent-draft");
+    toast(t("vent_done"));
+    closeVent();
+  } catch (e) {
+    if (e.message === "expired") return logout();
+    const msg = e.message.startsWith("mail_not_configured") ? t("vent_noconf") : t("vent_fail") + " (" + e.message.slice(0, 120) + ")";
+    $("vent-status").textContent = msg;
+    toast(msg);
+  }
+}
+
+/* ========= WISHES ========= */
+function sendWish() {
+  const txt = $("wish-text").value.trim();
+  if (!txt) { toast(t("wish_empty")); return; }
+  const subject = encodeURIComponent("أمنية من مريم 🌠");
+  const body = encodeURIComponent(txt);
+  location.href = `mailto:business.developer0807@gmail.com?subject=${subject}&body=${body}`;
+}
+
+/* ========= SUBJECTS & SONGS ========= */
+function addSubject() {
+  const v = $("new-subject").value.trim();
+  if (!v || S.subjects.some(s => s.name === v)) return;
+  S.subjects.push({ name: v, books: [] });
+  S.selectedSubject = v;
+  $("new-subject").value = "";
+  save(); renderSubjects();
+  toast("✓");
+}
+async function addBook(i) {
+  const title = $("bk-t-" + i).value.trim();
+  const link = $("bk-l-" + i).value.trim();
+  const file = $("bk-f-" + i).files[0];
+  if (!title) { toast(t("book_ph")); return; }
+  const book = { title, link: "" };
+  if (file) {
+    const id = "f" + Date.now() + Math.random().toString(36).slice(2, 7);
+    await putFile(id, file);
+    book.fileId = id;
+    book.fileName = file.name;
+  } else if (link) {
+    book.link = link;
+  } else {
+    toast(S.lang === "ar" ? "ارفعي ملف أو حطي رابط" : "Upload a file or add a link");
+    return;
+  }
+  S.subjects[i].books.push(book);
+  save(); renderSubjects();
+}
+async function openBook(id) {
+  const blob = await getFile(id);
+  if (!blob) { toast(S.lang === "ar" ? "الملف مش موجود" : "File not found"); return; }
+  window.open(URL.createObjectURL(blob), "_blank");
+}
+async function removeBook(i, j) {
+  const b = S.subjects[i].books[j];
+  if (b.fileId) await delFile(b.fileId);
+  S.subjects[i].books.splice(j, 1);
+  save(); renderSubjects();
+}
+function addSong() {
+  const url = $("s-url").value.trim();
+  if (!url) { toast("🎵 " + t("f_url")); return; }
+  const title = $("s-title").value.trim() || titleFromUrl(url);
+  const start = Math.max(0, parseInt($("s-start").value, 10) || 0);
+  const end = Math.max(start + 1, parseInt($("s-end").value, 10) || start + 20);
+  S.songs.push({ title, url, start, end });
+  if (S.songs.length === 1) S.selectedSong = 0;
+  $("s-title").value = ""; $("s-url").value = "";
+  save(); renderSongs();
+  toast("🎵 ✓");
+}
+
+/* ========= PROFILE ========= */
+$("p-pic").onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement("canvas");
+    const size = 160;
+    c.width = size; c.height = size;
+    const ctx = c.getContext("2d");
+    const m = Math.min(img.width, img.height);
+    ctx.drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, size, size);
+    S.profile.avatar = c.toDataURL("image/jpeg", 0.85);
+    save(); toast(t("saved"));
+  };
+  img.src = URL.createObjectURL(file);
+};
+let recorder = null, recChunks = [], recTimer = null;
+async function toggleRecord() {
+  if (recorder && recorder.state === "recording") { recorder.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(stream);
+    recChunks = [];
+    recorder.ondataavailable = e => recChunks.push(e.data);
+    recorder.onstop = () => {
+      stream.getTracks().forEach(tr => tr.stop());
+      clearTimeout(recTimer);
+      const reader = new FileReader();
+      reader.onload = () => {
+        S.profile.voice = reader.result;
+        save();
+        $("rec-note").textContent = t("rec_saved");
+        $("rec-btn").textContent = t("rec_btn");
+      };
+      reader.readAsDataURL(new Blob(recChunks, { type: "audio/webm" }));
+    };
+    recorder.start();
+    $("rec-note").textContent = t("rec_on");
+    $("rec-btn").textContent = "⏹";
+    recTimer = setTimeout(() => { if (recorder.state === "recording") recorder.stop(); }, 20000);
+  } catch {
+    toast(S.lang === "ar" ? "محتاجة إذن الميكروفون" : "Microphone permission needed");
+  }
+}
+function playMyVoice() {
+  if (!S.profile.voice) { toast(S.lang === "ar" ? "مفيش صوت مسجل لسه" : "No voice recorded yet"); return; }
+  new Audio(S.profile.voice).play();
+}
+
+/* ========= TABS ========= */
+function showTab(name) {
+  document.querySelectorAll("nav.bottom button").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+  ["home","room","shop","chat","subjects","settings"].forEach(id => {
+    const el = $("v-" + id);
+    el.classList.toggle("hidden", id !== name);
+    if (id === name) { el.classList.remove("view"); void el.offsetWidth; el.classList.add("view"); }
+  });
+  if (name === "chat") { const log = $("chat-log"); log.scrollTop = log.scrollHeight; }
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 /* ========= AUTH ========= */
-function showApp() {
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
+function enter(fromLogin) {
+  $("login").classList.add("hidden");
+  $("app").classList.remove("hidden");
   applyLang();
-  say("greet");
+  nunuSay(fromLogin ? "greet" : timeKind());
+  updatePet();
 }
 function logout() {
-  sessionStorage.removeItem("nunu-auth");
+  sessionStorage.removeItem("nunu-token");
+  stopSong();
   location.reload();
 }
+function toggleLang() { S.lang = S.lang === "ar" ? "en" : "ar"; save(); applyLang(); }
+function toggleTheme() { S.theme = S.theme === "night" ? "day" : "night"; save(); applyLang(); }
 
 /* ========= EVENTS ========= */
-document.getElementById("login-btn").onclick = () => {
-  const name = document.getElementById("login-name").value.trim();
-  const pass = document.getElementById("login-pass").value;
-  if (name === CONFIG.username && pass === CONFIG.password) {
-    sessionStorage.setItem("nunu-auth", "1");
-    showApp();
-  } else {
-    document.getElementById("login-error").textContent = T[S.lang].bad_login;
+$("login-btn").onclick = async () => {
+  if (location.protocol === "file:") { $("login-error").textContent = t("file_warn"); return; }
+  try {
+    const d = await API.login($("login-name").value.trim(), $("login-pass").value);
+    sessionStorage.setItem("nunu-token", d.token);
+    const displayName = $("login-display").value.trim();
+    if (displayName) S.profile.name = displayName;
+    S.profile.gender = $("login-gender").value;
+    save();
+    enter(true);
+    if (S.profile.voice) setTimeout(() => new Audio(S.profile.voice).play().catch(() => {}), 600);
+  } catch {
+    $("login-error").textContent = t("bad_login");
   }
 };
-document.getElementById("login-pass").addEventListener("keydown", e => {
-  if (e.key === "Enter") document.getElementById("login-btn").click();
+$("login-pass").addEventListener("keydown", e => { if (e.key === "Enter") $("login-btn").click(); });
+$("pass-eye").onclick = () => {
+  const inp = $("login-pass");
+  const hidden = inp.type === "password";
+  inp.type = hidden ? "text" : "password";
+  $("pass-eye").textContent = hidden ? "🙈" : "👁️";
+};
+$("logout-btn").onclick = logout;
+$("vent-btn").onclick = openVent;
+$("vent-close").onclick = closeVent;
+$("vent-send").onclick = () => sendVent("vent");
+$("vent").addEventListener("click", e => { if (e.target.id === "vent") closeVent(); });
+["lang-btn", "lang-btn-login"].forEach(id => $(id).onclick = toggleLang);
+["theme-btn", "theme-btn-login"].forEach(id => $(id).onclick = toggleTheme);
+document.querySelectorAll("nav.bottom button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+$("start-btn").onclick = startTimer;
+$("stop-btn").onclick = stopTimer;
+$("add-q-btn").onclick = recordQuestions;
+$("subject-select").onchange = e => { S.selectedSubject = e.target.value; save(); };
+$("add-subject-btn").onclick = addSubject;
+$("new-subject").addEventListener("keydown", e => { if (e.key === "Enter") addSubject(); });
+$("subject-list").onclick = e => {
+  const d = e.target.dataset;
+  if (d.delsub !== undefined) { S.subjects.splice(+d.delsub, 1); save(); renderSubjects(); }
+  if (d.delbook !== undefined) { const [i, j] = d.delbook.split("-").map(Number); removeBook(i, j); }
+  if (d.addbook !== undefined) addBook(+d.addbook);
+  if (d.openbook !== undefined) openBook(d.openbook);
+};
+$("song-list").onclick = e => {
+  const d = e.target.dataset;
+  if (d.play !== undefined) playSong(+d.play);
+  if (d.delsong !== undefined) {
+    S.songs.splice(+d.delsong, 1);
+    if (S.selectedSong >= S.songs.length) S.selectedSong = 0;
+    save(); renderSongs();
+  }
+};
+$("room").onclick = e => {
+  const d = e.target.closest("[data-use]");
+  if (d) useItem(d.dataset.use);
+};
+["inv-food", "inv-toy", "inv-care"].forEach(id => $(id).onclick = e => {
+  const b = e.target.closest("[data-use]");
+  if (b) useItem(b.dataset.use);
 });
-document.getElementById("logout-btn").onclick = logout;
-document.getElementById("lang-btn").onclick = () => {
-  S.lang = S.lang === "ar" ? "en" : "ar"; save(); applyLang();
+$("talk-btn").onclick = () => showPetBubble(pick(LINES[S.lang].chatter));
+$("wake-btn").onclick = () => {
+  S.pet.sleepUntil = 0;
+  S.pet.awakeUntil = Date.now() + 2 * 3600000;
+  save(); renderPet();
+  showPetBubble(pick(LINES[S.lang].morning));
 };
-document.getElementById("theme-btn").onclick = () => {
-  S.theme = S.theme === "night" ? "day" : "night"; save(); applyLang();
+$("nap-btn").onclick = () => {
+  S.pet.sleepUntil = Date.now() + 15 * 60000;
+  S.pet.awakeUntil = 0;
+  nunuSay("sleep");
+  save(); renderPet();
 };
-document.querySelectorAll("[data-tab]").forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("ghost", b !== btn));
-    ["home","shop","chat","settings"].forEach(id =>
-      document.getElementById("tab-" + id).classList.toggle("hidden-tab", id !== btn.dataset.tab));
-  };
-});
-document.getElementById("start-btn").onclick = startTimer;
-document.getElementById("stop-btn").onclick = stopTimer;
-document.getElementById("add-q-btn").onclick = recordQuestions;
-document.getElementById("subject-select").onchange = e => { S.selectedSubject = e.target.value; save(); };
-document.getElementById("add-subject-btn").onclick = () => {
-  const v = document.getElementById("new-subject").value.trim();
-  if (!v || S.subjects.includes(v)) return;
-  S.subjects.push(v); S.selectedSubject = v;
-  document.getElementById("new-subject").value = "";
-  save(); renderSubjects();
+$("store-grid").onclick = e => {
+  const b = e.target.closest("[data-buy]");
+  if (b) buyItem(b.dataset.buy);
 };
-document.getElementById("subject-list").onclick = e => {
-  const i = e.target.dataset.del;
-  if (i === undefined) return;
-  S.subjects.splice(+i, 1);
-  if (!S.subjects.includes(S.selectedSubject)) S.selectedSubject = S.subjects[0] || "";
-  save(); renderSubjects();
+$("box-btn").onclick = openBox;
+$("add-song-btn").onclick = addSong;
+$("wish-btn").onclick = sendWish;
+$("rec-btn").onclick = toggleRecord;
+$("play-voice-btn").onclick = playMyVoice;
+$("save-profile-btn").onclick = () => {
+  S.profile.name = $("p-name").value.trim();
+  S.profile.gender = $("p-gender").value;
+  save(); toast(t("saved"));
 };
-document.getElementById("music-btn").onclick = () => {
-  if (!S.songUrl) { document.getElementById("music-note").textContent = t("no_song"); return; }
-  const audio = new Audio(S.songUrl);
-  audio.play();
-  document.getElementById("music-note").textContent = "🎶";
+/* ========= INSTALL (تثبيت كتطبيق) ========= */
+let deferredInstall = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferredInstall = e; });
+$("install-btn").onclick = async () => {
+  if (deferredInstall) {
+    deferredInstall.prompt();
+    await deferredInstall.userChoice.catch(() => {});
+    deferredInstall = null;
+    $("install-note").textContent = "";
+    return;
+  }
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  $("install-note").textContent = t(isIOS ? "install_ios" : "install_other");
 };
-document.getElementById("save-song-btn").onclick = () => {
-  S.songUrl = document.getElementById("song-url").value.trim(); save();
-};
-document.getElementById("chat-send").onclick = sendChat;
-document.getElementById("chat-input").addEventListener("keydown", e => {
-  if (e.key === "Enter") sendChat();
-});
-document.getElementById("reset-btn").onclick = () => {
-  if (!confirm(S.lang === "ar" ? "متأكدة؟ كل البيانات هتتمسح" : "Are you sure? All data will be cleared")) return;
+$("chat-send").onclick = sendChat;
+$("chat-input").addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
+$("reset-btn").onclick = () => {
+  if (!confirm(S.lang === "ar" ? "متأكدة؟ كل البيانات هتتمسح" : "Are you sure?")) return;
   localStorage.removeItem(KEY); location.reload();
 };
 
+$("check-btn").onclick = async () => {
+  const out = $("check-out");
+  out.textContent = "بفحص...";
+  try {
+    const r = await fetch("/api/status", { headers: { authorization: "Bearer " + API.token() } });
+    if (r.status === 401) return logout();
+    const d = await r.json();
+    out.textContent =
+      "الشات: " + (d.chat.ok ? "شغال ✓" : "واقع ✗ — " + d.chat.error) + "\n" +
+      "الإيميل: " + (d.mail.ok ? "متظبط ✓" : "واقع ✗ — " + d.mail.error);
+  } catch {
+    out.textContent = "السيرفر مش بيرد";
+  }
+};
+
 /* ========= BOOT ========= */
-if (sessionStorage.getItem("nunu-auth") === "1") showApp();
-applyLang();
+decorate();
+setInterval(() => {
+  if (!$("app").classList.contains("hidden") && !timerStart) nunuTalk(pick(LINES[S.lang].chatter));
+}, 180000);
+setInterval(updatePet, 60000);
+if (API.token() && location.protocol !== "file:") enter(false);
+else applyLang();
 </script>
 </body>
 </html>
