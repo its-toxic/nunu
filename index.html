@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نونو | Nunu</title>
+<style>
+  :root {
+    --bg: #fff0f6; --card: #ffffff; --text: #5a3350; --muted: #a77c97;
+    --accent: #ff7eb6; --accent2: #b9a4ff; --ok: #7ed8a8; --border: #ffd6e8;
+  }
+  [data-theme="night"] {
+    --bg: #1f1830; --card: #2d2442; --text: #f3e6ff; --muted: #b9a4d6;
+    --accent: #ff8fc4; --accent2: #8f7cdc; --ok: #6fcf9f; --border: #3f3358;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI", Tahoma, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    transition: background .4s, color .4s;
+  }
+  .hidden { display: none !important; }
+  header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; background: var(--card); border-bottom: 2px solid var(--border);
+    position: sticky; top: 0; z-index: 5;
+  }
+  header h1 { margin: 0; font-size: 1.3rem; color: var(--accent); }
+  .controls button, .btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 999px;
+    padding: 8px 14px; margin: 0 3px; cursor: pointer; font-size: .9rem;
+  }
+  .btn.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+  .btn.secondary { background: var(--accent2); }
+  main { max-width: 720px; margin: 0 auto; padding: 16px; }
+  .card {
+    background: var(--card); border: 2px solid var(--border); border-radius: 20px;
+    padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.05);
+  }
+  input, select {
+    width: 100%; padding: 10px; border-radius: 12px; border: 2px solid var(--border);
+    background: var(--bg); color: var(--text); font-size: 1rem; margin: 6px 0;
+  }
+  /* Login */
+  #login { max-width: 360px; margin: 60px auto; text-align: center; }
+  #login .btn { width: 100%; margin-top: 10px; }
+  .error { color: #e0457b; font-size: .9rem; min-height: 1.2em; }
+  /* Nunu */
+  #nunu-wrap { text-align: center; }
+  #nunu {
+    width: 140px; height: 140px; margin: 0 auto; position: relative;
+    animation: bob 2.4s ease-in-out infinite;
+  }
+  .body {
+    width: 120px; height: 120px; border-radius: 50%; background: #ffd9ea;
+    margin: 10px auto; position: relative; border: 3px solid var(--accent);
+  }
+  .eye { width: 12px; height: 16px; background: #5a3350; border-radius: 50%;
+    position: absolute; top: 42px; }
+  .eye.l { left: 34px; } .eye.r { right: 34px; }
+  .cheek { width: 14px; height: 8px; background: #ff9ec7; border-radius: 50%;
+    position: absolute; top: 66px; opacity: .7; }
+  .cheek.l { left: 18px; } .cheek.r { right: 18px; }
+  .mouth { width: 26px; height: 12px; border-radius: 0 0 26px 26px; background: #5a3350;
+    position: absolute; left: 47px; top: 66px; }
+  .ear { width: 26px; height: 26px; background: #ffd9ea; border: 3px solid var(--accent);
+    border-radius: 50%; position: absolute; top: -10px; }
+  .ear.l { left: 10px; } .ear.r { right: 10px; }
+  #nunu.studying .body { animation: wiggle .6s infinite; }
+  #nunu.happy .body { animation: jump .5s infinite; }
+  #nunu.sleepy .eye { height: 3px; top: 50px; }
+  #nunu.sleepy .body { opacity: .9; }
+  @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes wiggle { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+  @keyframes jump { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+  #nunu-msg {
+    background: var(--bg); border-radius: 16px; padding: 12px; margin-top: 10px;
+    min-height: 48px; font-size: 1.05rem;
+  }
+  /* Timer */
+  #timer-display { font-size: 2.6rem; text-align: center; font-variant-numeric: tabular-nums; margin: 8px 0; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+  .stat { background: var(--bg); border-radius: 14px; padding: 10px; }
+  .stat b { display: block; font-size: 1.4rem; color: var(--accent); }
+  /* Shop */
+  .shop { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+  .gift { background: var(--bg); border-radius: 16px; padding: 10px; text-align: center; font-size: .9rem; }
+  .gift .emoji { font-size: 2rem; }
+  .gift.locked { opacity: .45; }
+  /* Subjects */
+  .subject-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .chip { background: var(--bg); border: 2px solid var(--border); border-radius: 999px; padding: 6px 12px; }
+  .chip button { background: none; border: none; color: var(--muted); cursor: pointer; }
+  /* Chat */
+  #chat-log { max-height: 220px; overflow-y: auto; }
+  .bubble { padding: 8px 12px; border-radius: 14px; margin: 6px 0; max-width: 85%; }
+  .bubble.me { background: var(--accent2); color: #fff; margin-inline-start: auto; }
+  .bubble.nunu { background: var(--bg); }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tabs button { flex: 1; min-width: 90px; }
+  .hidden-tab { display: none; }
+  .hint { color: var(--muted); font-size: .85rem; }
+  footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 20px; }
+</style>
+</head>
+<body>
+
+<!-- ===== Login ===== -->
+<div id="login" class="card">
+  <h2 style="color:var(--accent)">نونو</h2>
+  <p class="hint">اكتبي اسمك وكلمة السر</p>
+  <input id="login-name" placeholder="الاسم">
+  <input id="login-pass" type="password" placeholder="كلمة السر">
+  <div class="error" id="login-error"></div>
+  <button class="btn" id="login-btn">دخول</button>
+</div>
+
+<!-- ===== App ===== -->
+<div id="app" class="hidden">
+  <header>
+    <h1>نونو 🐰</h1>
+    <div class="controls">
+      <button id="lang-btn" title="Language">EN</button>
+      <button id="theme-btn" title="الوضع">🌙</button>
+      <button id="logout-btn" title="خروج">⏻</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="tabs">
+      <button class="btn" data-tab="home">الرئيسية</button>
+      <button class="btn ghost" data-tab="shop">الهدايا</button>
+      <button class="btn ghost" data-tab="chat">كلّمي نونو</button>
+      <button class="btn ghost" data-tab="settings">الإعدادات</button>
+    </div>
+
+    <!-- Home -->
+    <section id="tab-home">
+      <div class="card" id="nunu-wrap">
+        <div id="nunu">
+          <div class="ear l"></div><div class="ear r"></div>
+          <div class="body">
+            <div class="eye l"></div><div class="eye r"></div>
+            <div class="cheek l"></div><div class="cheek r"></div>
+            <div class="mouth"></div>
+          </div>
+        </div>
+        <div id="nunu-msg"></div>
+      </div>
+
+      <div class="card">
+        <div class="stats">
+          <div class="stat"><span class="hint">دقايق</span><b id="st-min">0</b></div>
+          <div class="stat"><span class="hint">أسئلة</span><b id="st-q">0</b></div>
+          <div class="stat"><span class="hint">نقاط</span><b id="st-pts">0</b></div>
+        </div>
+        <div class="hint" style="margin-top:8px">المكافأة: كل دقيقة مذاكرة = نقطة، وكل سؤال تحليه = نقطتين.</div>
+      </div>
+
+      <div class="card">
+        <label class="hint">المادة</label>
+        <select id="subject-select"></select>
+        <div id="timer-display">00:00</div>
+        <div class="row">
+          <button class="btn" id="start-btn">ابدأي المذاكرة</button>
+          <button class="btn secondary" id="stop-btn" disabled>خلصت</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <input id="q-count" type="number" min="0" placeholder="عدد الأسئلة اللي حليتها" style="width:auto;flex:1">
+          <button class="btn" id="add-q-btn">سجّلي</button>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn ghost" id="music-btn">🎵 شغّلي أغنية</button>
+        </div>
+        <div class="hint" id="music-note" style="text-align:center;margin-top:6px"></div>
+      </div>
+    </section>
+
+    <!-- Shop -->
+    <section id="tab-shop" class="hidden-tab">
+      <div class="card">
+        <h3 style="margin-top:0">الهدايا الافتراضية</h3>
+        <p class="hint">بتفتحي هدية كل ما تجمعي نقاط.</p>
+        <div class="shop" id="shop-grid"></div>
+      </div>
+    </section>
+
+    <!-- Chat -->
+    <section id="tab-chat" class="hidden-tab">
+      <div class="card">
+        <div id="chat-log"></div>
+        <div class="row" style="margin-top:8px">
+          <input id="chat-input" placeholder="اكتبي لنونو..." style="flex:1">
+          <button class="btn" id="chat-send">إرسال</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="tab-settings" class="hidden-tab">
+      <div class="card">
+        <h3 style="margin-top:0">المواد</h3>
+        <div class="subject-list" id="subject-list"></div>
+        <div class="row">
+          <input id="new-subject" placeholder="مادة جديدة">
+          <button class="btn" id="add-subject-btn">أضيفي</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">الأغاني</h3>
+        <p class="hint">حطّي رابط أغنية (MP3) أو سيبيه فاضي.</p>
+        <input id="song-url" placeholder="https://...">
+        <button class="btn" id="save-song-btn">احفظي</button>
+      </div>
+      <div class="card">
+        <button class="btn ghost" id="reset-btn">امسحي كل البيانات</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Developed by Ahmed<br>
+    📞 01032512602<br>
+    ✉️ business.devoleper08@gmail.com
+  </footer>
+</div>
+
+<script>
+/* ========= CONFIG ========= */
+// غيّري القيم دي قبل النشر. كلمة السر مكشوفة في الكود، فدي حماية بسيطة بس.
+const CONFIG = {
+  username: "memo",
+  password: "ahmed_memo"
+};
+
+/* ========= STATE ========= */
+const KEY = "nunu-state-v1";
+const defaults = {
+  lang: "ar", theme: "day",
+  subjects: ["عربي", "أحياء", "كيمياء", "فيزياء", "إنجليزي", "فرنساوي"],
+  selectedSubject: "عربي",
+  minutes: 0, questions: 0, points: 0,
+  songUrl: "",
+  gifts: [], // ids of unlocked gifts
+  log: []   // {type, text, ts}
+};
+let S = { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || "{}") };
+const save = () => localStorage.setItem(KEY, JSON.stringify(S));
+
+/* ========= I18N ========= */
+const T = {
+  ar: {
+    login_title: "نونو", login_hint: "اكتبي اسمك وكلمة السر", login_btn: "دخول",
+    bad_login: "الاسم أو كلمة السر غلط",
+    home: "الرئيسية", shop: "الهدايا", chat: "كلّمي نونو", settings: "الإعدادات",
+    minutes: "دقايق", questions: "أسئلة", points: "نقاط",
+    start: "ابدأي المذاكرة", stop: "خلصت", record: "سجّلي",
+    q_placeholder: "عدد الأسئلة اللي حليتها", music: "🎵 شغّلي أغنية",
+    no_song: "حطّي رابط أغنية من الإعدادات الأول",
+    subjects: "المواد", new_subject: "مادة جديدة", add: "أضيفي",
+    songs: "الأغاني", song_hint: "حطّي رابط أغنية (MP3) أو سيبيه فاضي.", save: "احفظي",
+    gifts: "الهدايا الافتراضية", gifts_hint: "بتفتحي هدية كل ما تجمعي نقاط.",
+    reset: "امسحي كل البيانات", send: "إرسال", chat_ph: "اكتبي لنونو...",
+    reward_hint: "المكافأة: كل دقيقة مذاكرة = نقطة، وكل سؤال تحليه = نقطتين.",
+    lang_btn: "EN", logout: "خروج"
+  },
+  en: {
+    login_title: "Nunu", login_hint: "Enter your name and password", login_btn: "Enter",
+    bad_login: "Wrong name or password",
+    home: "Home", shop: "Gifts", chat: "Talk to Nunu", settings: "Settings",
+    minutes: "Minutes", questions: "Questions", points: "Points",
+    start: "Start studying", stop: "Done", record: "Log",
+    q_placeholder: "Questions you solved", music: "🎵 Play a song",
+    no_song: "Add a song link in Settings first",
+    subjects: "Subjects", new_subject: "New subject", add: "Add",
+    songs: "Songs", song_hint: "Paste an MP3 link or leave empty.", save: "Save",
+    gifts: "Virtual gifts", gifts_hint: "Unlock a gift every time you earn points.",
+    reset: "Clear all data", send: "Send", chat_ph: "Say something to Nunu...",
+    reward_hint: "Reward: each study minute = 1 point, each question solved = 2 points.",
+    lang_btn: "عربي", logout: "Log out"
+  }
+};
+const t = k => T[S.lang][k];
+
+/* ========= GIFTS ========= */
+const GIFTS = [
+  { id: "flower",  emoji: "🌸", ar: "وردة",      en: "Flower",   cost: 10 },
+  { id: "star",    emoji: "⭐", ar: "نجمة",       en: "Star",     cost: 25 },
+  { id: "cake",    emoji: "🎂", ar: "تورتة",      en: "Cake",     cost: 40 },
+  { id: "plush",   emoji: "🧸", ar: "دبدوب",      en: "Teddy",    cost: 60 },
+  { id: "crown",   emoji: "👑", ar: "تاج",        en: "Crown",    cost: 90 },
+  { id: "rainbow", emoji: "🌈", ar: "قوس قزح",    en: "Rainbow",  cost: 120 }
+];
+
+/* ========= NUNU LINES ========= */
+const LINES = {
+  ar: {
+    idle:     ["أنا مستنياكي يا شطورة 🐰", "تعالي نذاكر سوا؟", "اهدي وركّزي، إنتي قادرة!"],
+    start:    ["يلا يا شطورة، ركّزي! 📚", "ذاكري براحتك، أنا جنبك", "بالتوفيق يا قمر!"],
+    stop:     ["برافو عليكي! 🎉", "شطورة أوي النهارده", "كملي كده وإنتي عظيمة ✨"],
+    question: ["حلو أوي! كده تمام 💪", "كل سؤال خطوة لقدام"],
+    gift:     ["فتحتي هدية جديدة! 🎁", "إنتي بتكسبي حاجات حلوة!"],
+    greet:    ["أهلاً يا مريم! 🐰", "نورتي يا قمر"]
+  },
+  en: {
+    idle:     ["I'm waiting for you, smart one 🐰", "Want to study together?", "Relax and focus, you can do it!"],
+    start:    ["Let's go, focus! 📚", "Study at your pace, I'm right here", "Good luck, superstar!"],
+    stop:     ["Well done! 🎉", "So smart today", "Keep it up, you're amazing ✨"],
+    question: ["Nice! That's it 💪", "Every question is a step forward"],
+    gift:     ["You unlocked a new gift! 🎁", "You're earning cute things!"],
+    greet:    ["Hi Maryam! 🐰", "Welcome back, superstar"]
+  }
+};
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const say = (kind) => {
+  document.getElementById("nunu-msg").textContent = pick(LINES[S.lang][kind]);
+};
+
+/* ========= RENDER ========= */
+function applyLang() {
+  document.documentElement.lang = S.lang;
+  document.documentElement.dir = S.lang === "ar" ? "rtl" : "ltr";
+  document.getElementById("lang-btn").textContent = t("lang_btn");
+  document.getElementById("logout-btn").title = t("logout");
+  document.querySelector('[data-tab="home"]').textContent = t("home");
+  document.querySelector('[data-tab="shop"]').textContent = t("shop");
+  document.querySelector('[data-tab="chat"]').textContent = t("chat");
+  document.querySelector('[data-tab="settings"]').textContent = t("settings");
+  document.getElementById("start-btn").textContent = t("start");
+  document.getElementById("stop-btn").textContent = t("stop");
+  document.getElementById("add-q-btn").textContent = t("record");
+  document.getElementById("q-count").placeholder = t("q_placeholder");
+  document.getElementById("music-btn").textContent = t("music");
+  document.getElementById("new-subject").placeholder = t("new_subject");
+  document.getElementById("add-subject-btn").textContent = t("add");
+  document.getElementById("chat-send").textContent = t("send");
+  document.getElementById("chat-input").placeholder = t("chat_ph");
+  document.getElementById("reset-btn").textContent = t("reset");
+  document.querySelector("#tab-home .hint:last-child").textContent = t("reward_hint");
+  document.querySelector("#tab-shop h3").textContent = t("gifts");
+  document.querySelector("#tab-shop .hint").textContent = t("gifts_hint");
+  document.getElementById("theme-btn").textContent = S.theme === "night" ? "☀️" : "🌙";
+  document.body.parentElement.dataset.theme = S.theme === "night" ? "night" : "day";
+  renderStats(); renderSubjects(); renderShop(); renderChatLog();
+}
+
+function renderStats() {
+  document.getElementById("st-min").textContent = S.minutes;
+  document.getElementById("st-q").textContent = S.questions;
+  document.getElementById("st-pts").textContent = S.points;
+}
+
+function renderSubjects() {
+  const sel = document.getElementById("subject-select");
+  sel.innerHTML = S.subjects.map(s => `<option ${s === S.selectedSubject ? "selected" : ""}>${s}</option>`).join("");
+  const list = document.getElementById("subject-list");
+  list.innerHTML = S.subjects.map((s, i) =>
+    `<span class="chip">${s} <button data-del="${i}">✕</button></span>`).join("");
+}
+
+function renderShop() {
+  const grid = document.getElementById("shop-grid");
+  grid.innerHTML = GIFTS.map(g => {
+    const owned = S.gifts.includes(g.id);
+    const locked = !owned && S.points < g.cost;
+    return `<div class="gift ${locked ? "locked" : ""}">
+      <div class="emoji">${owned ? g.emoji : "🔒"}</div>
+      <div>${S.lang === "ar" ? g.ar : g.en}</div>
+      <div class="hint">${owned ? "✓" : g.cost + " ★"}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderChatLog() {
+  const log = document.getElementById("chat-log");
+  log.innerHTML = S.log.slice(-30).map(m =>
+    `<div class="bubble ${m.from}">${escapeHtml(m.text)}</div>`).join("");
+  log.scrollTop = log.scrollHeight;
+}
+
+const escapeHtml = s => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ========= POINTS & GIFTS ========= */
+function addPoints(n) {
+  S.points += n;
+  for (const g of GIFTS) {
+    if (!S.gifts.includes(g.id) && S.points >= g.cost) {
+      S.gifts.push(g.id);
+      say("gift");
+    }
+  }
+  save(); renderStats(); renderShop();
+}
+
+/* ========= TIMER ========= */
+let timerStart = null, timerInterval = null, elapsed = 0;
+function fmt(sec) {
+  const m = Math.floor(sec / 60).toString().padStart(2, "0");
+  const s = (sec % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+}
+function startTimer() {
+  timerStart = Date.now();
+  document.getElementById("start-btn").disabled = true;
+  document.getElementById("stop-btn").disabled = false;
+  document.getElementById("nunu").className = "studying";
+  say("start");
+  timerInterval = setInterval(() => {
+    const sec = elapsed + Math.floor((Date.now() - timerStart) / 1000);
+    document.getElementById("timer-display").textContent = fmt(sec);
+  }, 500);
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  const sec = elapsed + Math.floor((Date.now() - timerStart) / 1000);
+  elapsed = 0; timerStart = null;
+  const mins = Math.floor(sec / 60);
+  document.getElementById("timer-display").textContent = fmt(0);
+  document.getElementById("start-btn").disabled = false;
+  document.getElementById("stop-btn").disabled = true;
+  document.getElementById("nunu").className = "happy";
+  if (mins > 0) {
+    S.minutes += mins;
+    S.log.push({ from: "nunu", text: S.lang === "ar"
+      ? `ذاكرتي ${mins} دقيقة في ${S.selectedSubject}` : `You studied ${mins} min of ${S.selectedSubject}` });
+    addPoints(mins);
+  }
+  say("stop");
+  setTimeout(() => document.getElementById("nunu").className = "", 3000);
+  save(); renderStats(); renderChatLog();
+}
+
+/* ========= QUESTIONS ========= */
+function recordQuestions() {
+  const input = document.getElementById("q-count");
+  const n = parseInt(input.value, 10);
+  if (!n || n < 1) return;
+  S.questions += n;
+  S.log.push({ from: "nunu", text: S.lang === "ar"
+    ? `حليتي ${n} سؤال في ${S.selectedSubject} 💪` : `You solved ${n} questions in ${S.selectedSubject} 💪` });
+  addPoints(n * 2);
+  input.value = "";
+  say("question");
+  save(); renderStats(); renderChatLog();
+}
+
+/* ========= CHAT (simple rule-based, no network) ========= */
+function nunuReply(msg) {
+  const m = msg.trim();
+  const ar = S.lang === "ar";
+  if (/ذكرت|مذاكرة|دقايق|minutes|studied/i.test(m)) {
+    return ar ? `ذاكرتي ${S.minutes} دقيقة لحد دلوقتي، حلو أوي!`
+              : `You've studied ${S.minutes} minutes so far, lovely!`;
+  }
+  if (/حليت|سؤال|questions|solved/i.test(m)) {
+    return ar ? `حليتي ${S.questions} سؤال، إنتي شاطرة!`
+              : `You solved ${S.questions} questions, you're smart!`;
+  }
+  if (/نقط|points/i.test(m)) {
+    return ar ? `معاكي ${S.points} نقطة، كملي!` : `You have ${S.points} points, keep going!`;
+  }
+  if (/اغن|song|music/i.test(m)) {
+    return S.songUrl ? (ar ? "تمام، اضغطي على 🎵 في الرئيسية" : "Sure, press 🎵 on the home screen")
+                     : (ar ? "حطّي رابط أغنية من الإعدادات الأول" : "Add a song link in Settings first");
+  }
+  return pick(LINES[S.lang].idle);
+}
+function sendChat() {
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+  if (!text) return;
+  S.log.push({ from: "me", text });
+  S.log.push({ from: "nunu", text: nunuReply(text) });
+  input.value = "";
+  save(); renderChatLog();
+}
+
+/* ========= AUTH ========= */
+function showApp() {
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  applyLang();
+  say("greet");
+}
+function logout() {
+  sessionStorage.removeItem("nunu-auth");
+  location.reload();
+}
+
+/* ========= EVENTS ========= */
+document.getElementById("login-btn").onclick = () => {
+  const name = document.getElementById("login-name").value.trim();
+  const pass = document.getElementById("login-pass").value;
+  if (name === CONFIG.username && pass === CONFIG.password) {
+    sessionStorage.setItem("nunu-auth", "1");
+    showApp();
+  } else {
+    document.getElementById("login-error").textContent = T[S.lang].bad_login;
+  }
+};
+document.getElementById("login-pass").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("login-btn").click();
+});
+document.getElementById("logout-btn").onclick = logout;
+document.getElementById("lang-btn").onclick = () => {
+  S.lang = S.lang === "ar" ? "en" : "ar"; save(); applyLang();
+};
+document.getElementById("theme-btn").onclick = () => {
+  S.theme = S.theme === "night" ? "day" : "night"; save(); applyLang();
+};
+document.querySelectorAll("[data-tab]").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll("[data-tab]").forEach(b => b.classList.toggle("ghost", b !== btn));
+    ["home","shop","chat","settings"].forEach(id =>
+      document.getElementById("tab-" + id).classList.toggle("hidden-tab", id !== btn.dataset.tab));
+  };
+});
+document.getElementById("start-btn").onclick = startTimer;
+document.getElementById("stop-btn").onclick = stopTimer;
+document.getElementById("add-q-btn").onclick = recordQuestions;
+document.getElementById("subject-select").onchange = e => { S.selectedSubject = e.target.value; save(); };
+document.getElementById("add-subject-btn").onclick = () => {
+  const v = document.getElementById("new-subject").value.trim();
+  if (!v || S.subjects.includes(v)) return;
+  S.subjects.push(v); S.selectedSubject = v;
+  document.getElementById("new-subject").value = "";
+  save(); renderSubjects();
+};
+document.getElementById("subject-list").onclick = e => {
+  const i = e.target.dataset.del;
+  if (i === undefined) return;
+  S.subjects.splice(+i, 1);
+  if (!S.subjects.includes(S.selectedSubject)) S.selectedSubject = S.subjects[0] || "";
+  save(); renderSubjects();
+};
+document.getElementById("music-btn").onclick = () => {
+  if (!S.songUrl) { document.getElementById("music-note").textContent = t("no_song"); return; }
+  const audio = new Audio(S.songUrl);
+  audio.play();
+  document.getElementById("music-note").textContent = "🎶";
+};
+document.getElementById("save-song-btn").onclick = () => {
+  S.songUrl = document.getElementById("song-url").value.trim(); save();
+};
+document.getElementById("chat-send").onclick = sendChat;
+document.getElementById("chat-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") sendChat();
+});
+document.getElementById("reset-btn").onclick = () => {
+  if (!confirm(S.lang === "ar" ? "متأكدة؟ كل البيانات هتتمسح" : "Are you sure? All data will be cleared")) return;
+  localStorage.removeItem(KEY); location.reload();
+};
+
+/* ========= BOOT ========= */
+if (sessionStorage.getItem("nunu-auth") === "1") showApp();
+applyLang();
+</script>
+</body>
+</html>
