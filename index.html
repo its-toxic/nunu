@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#b58ad6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="نونو">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png">
-<link rel="apple-touch-icon" href="/icon-180.png">
-<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});</script>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="icon" href="./icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {});</script>
 <title>نونو 🐰🍇</title>
 <style>
 :root{
@@ -581,6 +581,8 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px 10px 0
 
 <script>
 /* ========= STATE ========= */
+// عنوان الـ API على Supabase: حطي الرابط بتاع الدالة بعد ما تنزليها (من غير / في الآخر)
+const API_BASE = "https://YOUR-PROJECT-REF.supabase.co/functions/v1/api";
 const KEY = "nunu-state-v6";
 const DEF = {
   lang: "ar", theme: "day",
@@ -791,18 +793,18 @@ const nunuSay = (kind, talk = true) => {
 const API = {
   token: () => sessionStorage.getItem("nunu-token") || "",
   async login(user, pass) {
-    const r = await fetch("/api/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ user, pass }) });
+    const r = await fetch(API_BASE + "/login",{ method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ user, pass }) });
     if (!r.ok) throw new Error("bad");
     return r.json();
   },
   async chat(payload) {
-    const r = await fetch("/api/chat", { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + this.token() }, body: JSON.stringify(payload) });
+    const r = await fetch(API_BASE + "/chat",{ method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + this.token() }, body: JSON.stringify(payload) });
     if (r.status === 401) throw new Error("expired");
     const d = await r.json();
     return d;
   },
   async vent(text, mode) {
-    const r = await fetch("/api/vent", { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + this.token() }, body: JSON.stringify({ text, mode }) });
+    const r = await fetch(API_BASE + "/vent",{ method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + this.token() }, body: JSON.stringify({ text, mode }) });
     if (r.status === 401) throw new Error("expired");
     const d = await r.json();
     if (!r.ok) throw new Error((d.error || "fail") + (d.detail ? ": " + d.detail : ""));
@@ -1569,7 +1571,7 @@ $("check-btn").onclick = async () => {
   const out = $("check-out");
   out.textContent = "بفحص...";
   try {
-    const r = await fetch("/api/status", { headers: { authorization: "Bearer " + API.token() } });
+    const r = await fetch(API_BASE + "/status",{ headers: { authorization: "Bearer " + API.token() } });
     if (r.status === 401) return logout();
     const d = await r.json();
     out.textContent =
