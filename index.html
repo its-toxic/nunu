@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="نونو">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="icon" href="./icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="./icon-180.png">
 <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {});</script>
@@ -67,6 +66,7 @@ nav.bottom button:active{transform:scale(.94)}
 input,select,textarea{width:100%;padding:12px 14px;border-radius:16px;border:2px solid var(--line);
   background:var(--fill);color:var(--text);font-size:1rem;margin:5px 0;outline:none;transition:border .2s,box-shadow .2s}
 input:focus,select:focus,textarea:focus{border-color:var(--p1);box-shadow:0 0 0 4px rgba(181,138,214,.2)}
+select option{background:var(--fill);color:var(--text)}
 .hint{color:var(--muted);font-size:.87rem}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
 .row.start{justify-content:flex-start}
@@ -327,8 +327,6 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px 10px 0
   <h2 style="margin:4px 0;color:var(--p2)" data-i18n="login_title">نونو</h2>
   <p class="hint" data-i18n="login_hint">اكتبي اسمك وكلمة السر</p>
   <input id="login-name" data-i18n-ph="user_ph" placeholder="اسم الدخول">
-  <input id="login-display" data-i18n-ph="display_ph" placeholder="اسمك اللي نونو تناديكِ بيه">
-  <select id="login-gender"><option value="بنت" data-i18n="girl">بنت</option><option value="ولد" data-i18n="boy">ولد</option></select>
   <div class="pass-wrap">
     <input id="login-pass" type="password" data-i18n-ph="pass_ph" placeholder="كلمة السر">
     <button type="button" class="eye-toggle" id="pass-eye" title="show">👁️</button>
@@ -561,6 +559,16 @@ footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px 10px 0
 </div>
 
 <!-- ===== فضفضة ===== -->
+<div id="welcome" class="vent hidden">
+  <div class="vent-card">
+    <h3 data-i18n="welcome_title">اسمك إيه؟</h3>
+    <p class="hint" data-i18n="welcome_hint">عايزة تعرف تناديك بإيه، وإنت ولد ولا بنت؟</p>
+    <input id="welcome-name" data-i18n-ph="display_ph" placeholder="اسمك اللي نونو تناديكِ بيه">
+    <span class="field-label" data-i18n="f_gender">النوع</span>
+    <select id="welcome-gender"><option value="بنت" data-i18n="girl">بنت</option><option value="ولد" data-i18n="boy">ولد</option></select>
+    <div class="row" style="margin-top:12px"><button class="btn" id="welcome-save" data-i18n="welcome_btn">يلا</button></div>
+  </div>
+</div>
 <div id="vent" class="vent hidden">
   <div class="vent-card">
     <div class="vent-head">
@@ -611,6 +619,7 @@ const T = {
   ar: {
     login_title:"نونو", login_hint:"اكتبي اسم الدخول وكلمة السر، واسمك وانتي بتسجلي", login_btn:"دخول", name_ph:"الاسم", pass_ph:"كلمة السر",
     user_ph:"اسم الدخول", display_ph:"اسمك اللي نونو تناديكِ بيه", f_gender:"النوع", boy:"ولد", girl:"بنت",
+    welcome_title:"اسمك إيه؟", welcome_hint:"عايزة تعرف تناديك بإيه، وإنت ولد ولا بنت؟", welcome_btn:"يلا",
     install_btn:"📲 نزّلي نونو على التلفون", install_ios:"على iPhone: من Safari اضغطي زرار المشاركة ⬆️ واختاري Add to Home Screen", install_other:"على Android: من Chrome اضغطي ⋮ واختاري Install app",
     bad_login:"الاسم أو كلمة السر غلط، أو السيرفر مش شغال",
     file_warn:"افتحي الموقع من http://localhost:3001 مش من ملف index.html مباشرة",
@@ -649,6 +658,7 @@ const T = {
   en: {
     login_title:"Nunu", login_hint:"Enter your username and password, plus your name", login_btn:"Enter", name_ph:"Name", pass_ph:"Password",
     user_ph:"Username", display_ph:"Your name (Nunu will call you this)", f_gender:"Gender", boy:"Boy", girl:"Girl",
+    welcome_title:"What's your name?", welcome_hint:"What should Nunu call you, and are you a boy or a girl?", welcome_btn:"Let's go",
     install_btn:"📲 Install Nunu on your phone", install_ios:"On iPhone: in Safari tap Share ⬆️ then Add to Home Screen", install_other:"On Android: in Chrome tap ⋮ then Install app",
     bad_login:"Wrong name or password, or the server is down",
     file_warn:"Open the app from http://localhost:3001, not the index.html file",
@@ -1317,6 +1327,22 @@ async function sendVent(mode) {
   }
 }
 
+/* ========= WELCOME (بعد الدخول) ========= */
+function openWelcome() {
+  $("welcome-name").value = S.profile.name || "";
+  $("welcome-gender").value = S.profile.gender || "بنت";
+  $("welcome").classList.remove("hidden");
+  $("welcome-name").focus();
+}
+$("welcome-save").onclick = () => {
+  const name = $("welcome-name").value.trim();
+  if (!name) { toast(S.lang === "ar" ? "اكتبي اسمك الأول 🤍" : "Write your name first 🤍"); return; }
+  S.profile.name = name;
+  S.profile.gender = $("welcome-gender").value;
+  save(); applyLang();
+  $("welcome").classList.add("hidden");
+};
+
 /* ========= WISHES ========= */
 function sendWish() {
   const txt = $("wish-text").value.trim();
@@ -1464,10 +1490,7 @@ $("login-btn").onclick = async () => {
   try {
     const d = await API.login($("login-name").value.trim(), $("login-pass").value);
     sessionStorage.setItem("nunu-token", d.token);
-    const displayName = $("login-display").value.trim();
-    if (displayName) S.profile.name = displayName;
-    S.profile.gender = $("login-gender").value;
-    save();
+    if (!S.profile.name) setTimeout(openWelcome, 300);
     enter(true);
     if (S.profile.voice) setTimeout(() => new Audio(S.profile.voice).play().catch(() => {}), 600);
   } catch {
